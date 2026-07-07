@@ -85,7 +85,10 @@
 
         /* Su mobile, quando il video è attivo, mostra prima il video+grafico e poi i controlli */
         @media(max-width: 899px) {
-            body.video-active .display-panel { order: -1; }
+            body.video-active .display-panel {
+                order: -1;
+                animation: panelFadeIn 0.3s ease;
+            }
         }
 
         .panel {
@@ -259,10 +262,16 @@
             position: relative;
         }
 
+        @keyframes panelFadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         body.video-active .video-container {
             display: flex; /* cambiato da block a flex per centrare il contenuto di fallback */
             align-items: center;
             justify-content: center;
+            animation: panelFadeIn 0.3s ease;
         }
 
         .video-container iframe {
@@ -332,19 +341,6 @@
             transition: transform 0.2s;
         }
         .btn-youtube-pop:hover { transform: scale(1.05); }
-
-        #custom-video-control {
-            display: none;
-            gap: 6px;
-            background-color: var(--bg-secondary);
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-        }
-
-        body.video-active #custom-video-control {
-            display: flex;
-        }
 
         .visual-container {
             background-color: var(--bg-primary);
@@ -541,8 +537,6 @@
                 </div>
             </div>
 
-            <button id="btn-gemini-trigger" class="btn btn-ai" style="display:none;" onclick="openGeminiModal()">🤖 Chiedi a Gemini il Video Perfetto</button>
-
             <div style="display: flex; gap: 8px;">
                 <button id="btn-action" class="btn btn-start" style="flex: 2;" onclick="toggleTimer()">Avvia</button>
                 <button id="btn-reset" class="btn btn-reset" style="flex: 1;" onclick="resetTimer()">Reset</button>
@@ -613,13 +607,6 @@
             <!-- RIGA DI STATO VIDEO -->
             <div id="video-status"></div>
 
-            <!-- BARRA LINK CUSTOM -->
-            <div id="custom-video-control">
-                <input type="text" id="custom-vid-url" placeholder="Oppure incolla qui un tuo link YouTube..." style="font-size: 11px; padding: 6px; flex: 1;">
-                <button class="btn btn-start" onclick="loadCustomVideo()" style="padding: 6px 10px; font-size: 11px;">Carica Link</button>
-                <button class="btn" onclick="nextVideo()" style="padding: 6px 10px; font-size: 11px; background-color: var(--highlight); color: white;" title="Passa al prossimo video della lista">⏭ Cambia</button>
-            </div>
-
             <div class="visual-container">
                 <div class="chart-main">
                     <div class="y-axis left-axis">
@@ -655,31 +642,10 @@
         </div>
     </div>
 
-    <!-- POPUP GEMINI API -->
-    <div class="modal" id="gemini-modal">
-        <div class="modal-content">
-            <div class="modal-header">🤖 Analisi AI dell'Allenamento</div>
-            <div class="modal-body" id="gemini-log">Attendo istruzioni. Clicca su "Analizza Programma".</div>
-            <div style="display:flex; gap:8px; justify-content: flex-end;">
-                <button class="btn" onclick="closeGeminiModal()" style="font-size:12px; padding:6px 12px; background:var(--border-color); color:white;">Chiudi</button>
-                <button class="btn btn-start" onclick="processGeminiAI()" style="font-size:12px; padding:6px 12px; background: linear-gradient(135deg, #a855f7, #2563eb);">Analizza Programma</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- POPUP IMPOSTAZIONI: unico punto dove inserire le chiavi API -->
+    <!-- POPUP IMPOSTAZIONI: unico punto dove inserire la chiave API -->
     <div class="modal" id="settings-modal">
         <div class="modal-content">
             <div class="modal-header">⚙️ Impostazioni API</div>
-
-            <div class="control-group">
-                <label style="font-size: 10px;">Gemini API Key (da Google AI Studio) — sceglie lo scenario e la query di ricerca</label>
-                <div style="display: flex; gap: 6px;">
-                    <input type="password" id="gemini-key" placeholder="Incolla qui la tua Gemini API Key..." style="flex: 1; font-size:12px; padding:8px;" onchange="saveGeminiKey()">
-                    <button class="btn btn-reset" onclick="clearApiKey()" style="padding: 8px 12px; font-size: 11px;">Pulisci</button>
-                </div>
-                <div id="gemini-key-status" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Senza chiave: uso lo scenario automatico interno.</div>
-            </div>
 
             <div class="control-group">
                 <label style="font-size: 10px;">YouTube Data API Key (da Google Cloud Console) — trova video verificati e incorporabili</label>
@@ -752,35 +718,101 @@
         const MAX_SPEED_SCALE = 14; 
         const MAX_INCLINE_SCALE = 12;
 
-        // Libreria offline: video POV reali di camminata/corsa per tapis roulant.
+        // Libreria offline (usata solo se non hai una chiave YouTube Data API):
+        // video POV reali di camminata/corsa per tapis roulant, uno o più per scenario.
         // Se un video risulta bloccato (errore 101/150/153) l'app passa da sola al successivo.
         const videoDB = {
-            "alpi_svizzere":     ["zsp2XG8lPyw", "YLIU4KYv36Q"],
-            "tokyo_night_run":   ["0nTO4zSEpOs", "SiryvrStb8E", "ohlzQNCpT7M"],
-            "central_park_ny":   ["GzBPdJT8rq4", "s9vAJjGoTrc", "seNJIKyYtME"],
-            "foresta_montana":   ["LT_qbxQHJ7s", "PpQraiCS7Xw", "6UcSmZDUPVQ"],
-            "corsa_in_spiaggia": ["tAwJE-1z6z0", "AXMHh4KttQ8", "m3D3_wdT11g"],
-            "spiaggia_tramonto": ["BCJdm2RLjHE", "mazA7BgH0h0", "lOGE7nNkL0Y"],
-            "sentiero_roccioso": ["BKnvF9G5pG8", "YLIU4KYv36Q"]
+            "passeggiata_citta":        ["GzBPdJT8rq4", "s9vAJjGoTrc"],
+            "jogging_citta":            ["1iwHhiRDYW8", "seNJIKyYtME"],
+            "corsa_citta":              ["jw15i-uLdOk", "0nTO4zSEpOs"],
+            "passeggiata_collina":      ["LT_qbxQHJ7s", "6UcSmZDUPVQ"],
+            "camminata_blanda_collina": ["PpQraiCS7Xw", "LT_qbxQHJ7s"],
+            "corsa_collina":            ["BKnvF9G5pG8", "jw15i-uLdOk"],
+            "camminata_ripida_montagna":["zsp2XG8lPyw", "YLIU4KYv36Q"],
+            "salita_montagna":          ["YLIU4KYv36Q", "zsp2XG8lPyw"],
+            "trail_running_montagna":   ["BKnvF9G5pG8", "jw15i-uLdOk"]
         };
 
-        // Query di ricerca YouTube associate a ogni scenario (usate con la YouTube Data API)
+        // Query di ricerca YouTube per ogni scenario (usate con la YouTube Data API,
+        // che è il percorso raccomandato: garantisce video davvero incorporabili).
+        // Più varianti per categoria: ad ogni riproduzione ne scegliamo una a caso,
+        // così i risultati cambiano nel tempo senza bisogno di un'AI che li generi.
         const categoryQueries = {
-            "alpi_svizzere":     "swiss alps virtual hike 4K POV treadmill",
-            "tokyo_night_run":   "tokyo night walk 4K POV",
-            "central_park_ny":   "central park new york 4K walking tour",
-            "foresta_montana":   "virtual forest walk 4K treadmill nature",
-            "corsa_in_spiaggia": "virtual run beach 4K treadmill scenery",
-            "spiaggia_tramonto": "beach sunset virtual walk 4K",
-            "sentiero_roccioso": "mountain trail virtual hike 4K POV treadmill"
+            "passeggiata_citta": [
+                "slow relaxing city walk 4K POV treadmill",
+                "leisurely city stroll 4K virtual walk",
+                "calm downtown walking tour 4K POV"
+            ],
+            "jogging_citta": [
+                "city jogging virtual run 4K POV treadmill",
+                "urban jog scenery 4K treadmill workout",
+                "moderate pace city run 4K POV"
+            ],
+            "corsa_citta": [
+                "fast city run virtual treadmill 4K POV",
+                "urban running workout scenery 4K",
+                "intense city sprint POV treadmill 4K"
+            ],
+            "passeggiata_collina": [
+                "gentle hill walk virtual treadmill 4K nature",
+                "easy countryside walk 4K POV hill",
+                "peaceful hillside stroll 4K treadmill"
+            ],
+            "camminata_blanda_collina": [
+                "moderate hill walking trail virtual treadmill 4K",
+                "hill trail walk scenery 4K POV",
+                "countryside trail walk 4K treadmill workout"
+            ],
+            "corsa_collina": [
+                "hill trail running virtual treadmill 4K POV",
+                "trail run hill scenery 4K workout",
+                "cross country run hills 4K POV"
+            ],
+            "camminata_ripida_montagna": [
+                "steep mountain walk virtual treadmill 4K POV slow",
+                "alpine trail slow walk 4K POV",
+                "steep incline mountain hike 4K treadmill"
+            ],
+            "salita_montagna": [
+                "mountain incline hike virtual treadmill 4K POV",
+                "uphill mountain trail 4K POV workout",
+                "climbing mountain trail scenery 4K"
+            ],
+            "trail_running_montagna": [
+                "steep mountain trail running virtual treadmill 4K POV",
+                "mountain trail run intense 4K POV",
+                "alpine trail running workout scenery 4K"
+            ]
         };
+
+        // Etichette leggibili per il log e lo stato video
+        const categoryLabels = {
+            "passeggiata_citta":         "Passeggiata in città",
+            "jogging_citta":             "Jogging in città",
+            "corsa_citta":               "Corsa in città",
+            "passeggiata_collina":       "Passeggiata in collina",
+            "camminata_blanda_collina":  "Camminata blanda in collina",
+            "corsa_collina":             "Corsa in collina",
+            "camminata_ripida_montagna": "Camminata ripida in montagna",
+            "salita_montagna":           "Salita in montagna",
+            "trail_running_montagna":    "Trail running in montagna"
+        };
+
+        function pickQueryFor(category) {
+            const variants = categoryQueries[category] || [category.replace(/_/g, ' ')];
+            return variants[Math.floor(Math.random() * variants.length)];
+        }
+
+        function shuffleArray(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
 
         window.onload = function() {
-            const savedKey = localStorage.getItem("bcube_api_key");
-            if(savedKey) {
-                document.getElementById('gemini-key').value = savedKey;
-                document.getElementById('gemini-key-status').innerText = "✅ Chiave salvata: analisi AI attiva.";
-            }
             const savedYtKey = localStorage.getItem("bcube_yt_api_key");
             if(savedYtKey) {
                 document.getElementById('yt-api-key').value = savedYtKey;
@@ -804,20 +836,6 @@
 
         function closeSettingsModal() {
             document.getElementById('settings-modal').classList.remove('open');
-        }
-
-        function saveGeminiKey() {
-            const key = document.getElementById('gemini-key').value.trim();
-            if (key !== "") {
-                localStorage.setItem("bcube_api_key", key);
-                document.getElementById('gemini-key-status').innerText = "✅ Chiave salvata: analisi AI attiva.";
-            }
-        }
-
-        function clearApiKey() {
-            localStorage.removeItem("bcube_api_key");
-            document.getElementById('gemini-key').value = "";
-            document.getElementById('gemini-key-status').innerText = "Senza chiave: uso lo scenario automatico interno.";
         }
 
         function saveYtKey() {
@@ -864,23 +882,16 @@
             const body = document.body;
             const btnNoVid = document.getElementById('mode-no-video');
             const btnVid = document.getElementById('mode-video');
-            const aiBtn = document.getElementById('btn-gemini-trigger');
 
             if(enable) {
                 body.classList.add('video-active');
                 btnNoVid.classList.remove('active');
                 btnVid.classList.add('active');
-                aiBtn.style.display = 'block';
                 triggerVideoUpdate();
-                setTimeout(() => {
-                    const container = document.getElementById('youtube-container');
-                    if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
             } else {
                 body.classList.remove('video-active');
                 btnNoVid.classList.add('active');
                 btnVid.classList.remove('active');
-                aiBtn.style.display = 'none';
                 stopVideoPlayback();
             }
         }
@@ -1012,12 +1023,6 @@
             playCurrentQueueVideo();
         }
 
-        function nextVideo() {
-            if (videoQueue.length === 0) return;
-            queueIndex = (queueIndex + 1) % videoQueue.length;
-            playCurrentQueueVideo();
-        }
-
         function dismissLocalWarning() {
             document.body.classList.remove('is-local-file');
             playCurrentQueueVideo();
@@ -1033,14 +1038,10 @@
         }
 
         function buildQueueFromCategory(category) {
-            const list = (videoDB[category] || videoDB["foresta_montana"]).slice();
-            for (let i = list.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [list[i], list[j]] = [list[j], list[i]];
-            }
-            videoQueue = list;
+            const list = videoDB[category] || videoDB["camminata_blanda_collina"];
+            videoQueue = shuffleArray(list);
             queueIndex = 0;
-            currentQueueLabel = category.replace(/_/g, ' ').toUpperCase() + " (libreria interna)";
+            currentQueueLabel = (categoryLabels[category] || category) + " (libreria interna)";
         }
 
         // Contatore per scartare risposte di ricerca "vecchie" se l'utente
@@ -1051,14 +1052,15 @@
             if (!isVideoModeActive || !currentProgram) return;
             const myToken = ++videoUpdateToken;
 
-            const maxSpeed = Math.max(...currentProgram.speed);
-            const maxIncline = Math.max(...currentProgram.incline);
-            const category = mockGeminiEngine(maxSpeed, maxIncline);
+            const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
+            const avgSpeed = avg(currentProgram.speed);
+            const avgIncline = avg(currentProgram.incline);
+            const category = classifyProgram(avgSpeed, avgIncline);
             const ytKey = getYtApiKey();
 
             if (ytKey) {
                 setVideoStatus("🔎 Cerco su YouTube video verificati per questo scenario...");
-                const query = categoryQueries[category] || category.replace(/_/g, ' ');
+                const query = pickQueryFor(category);
                 const ok = await searchYouTubeEmbeddable(query, category, ytKey, myToken);
                 if (myToken !== videoUpdateToken) return; // superato da un aggiornamento più recente
                 if (ok) { playCurrentQueueVideo(); return; }
@@ -1089,9 +1091,9 @@
                     setVideoStatus("⚠️ Nessun video incorporabile trovato per questa ricerca.");
                     return false;
                 }
-                videoQueue = ids;
+                videoQueue = shuffleArray(ids);
                 queueIndex = 0;
-                currentQueueLabel = (label ? label.replace(/_/g, ' ').toUpperCase() : query) + " (YouTube, verificato)";
+                currentQueueLabel = (label && categoryLabels[label] ? categoryLabels[label] : (label || query)) + " (YouTube, verificato)";
                 return true;
             } catch (e) {
                 setVideoStatus(`⚠️ Errore di rete verso YouTube: ${e.message}`);
@@ -1099,150 +1101,43 @@
             }
         }
 
-        function extractVideoId(url) {
-            url = (url || "").trim();
-            const m = url.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([A-Za-z0-9_-]{11})/);
-            if (m) return m[1];
-            if (/^[A-Za-z0-9_-]{11}$/.test(url)) return url;
-            return null;
+
+        // Fasce di velocità e pendenza (basate sulla MEDIA del programma, non sui
+        // picchi, per riflettere l'intensità reale). Soglie calibrate sulla effettiva
+        // distribuzione dei 36 programmi dell'app (velocità media 4.3-9.5 km/h,
+        // pendenza media 4-7.9%), così la matrice usa più scenari possibili invece
+        // di concentrarsi su 2-3 categorie centrali.
+        function speedBand(avgSpeed) {
+            if (avgSpeed < 6) return "bassa";
+            if (avgSpeed < 7.5) return "media";
+            return "alta";
+        }
+        function inclineBand(avgIncline) {
+            if (avgIncline < 5) return "bassa";
+            if (avgIncline < 6.5) return "media";
+            return "alta";
         }
 
-        function loadCustomVideo() {
-            const url = document.getElementById('custom-vid-url').value;
-            const videoId = extractVideoId(url);
-            if (!videoId) {
-                alert("Per favore, incolla un link YouTube valido.");
-                return;
-            }
-            videoQueue = [videoId];
-            queueIndex = 0;
-            currentQueueLabel = "VIDEO PERSONALE";
-            playCurrentQueueVideo();
-            document.getElementById('custom-vid-url').value = "";
-        }
+        // Matrice 3x3 velocità × pendenza → scenario.
+        // Poca pendenza e bassa velocità = camminata in città; poca pendenza e media
+        // velocità = jogging in città; poca pendenza e alta velocità = corsa in città;
+        // bassa velocità e alta pendenza = camminata ripida in montagna; pendenza e
+        // velocità medie = camminata blanda in collina; e così via sulle altre celle.
+        const classificationMatrix = {
+            "bassa_bassa":  "passeggiata_citta",          // poca pendenza, bassa velocità
+            "media_bassa":  "jogging_citta",               // poca pendenza, media velocità
+            "alta_bassa":   "corsa_citta",                 // poca pendenza, alta velocità
+            "bassa_media":  "passeggiata_collina",         // pendenza media, bassa velocità
+            "media_media":  "camminata_blanda_collina",    // pendenza media, media velocità
+            "alta_media":   "corsa_collina",                // pendenza media, alta velocità
+            "bassa_alta":   "camminata_ripida_montagna",   // alta pendenza, bassa velocità
+            "media_alta":   "salita_montagna",             // alta pendenza, media velocità
+            "alta_alta":    "trail_running_montagna"       // alta pendenza, alta velocità
+        };
 
-        function openGeminiModal() {
-            document.getElementById('gemini-modal').classList.add('open');
-            document.getElementById('gemini-log').innerText = "Sistema Pronto.\nClicca 'Analizza Programma'.";
-        }
-
-        function closeGeminiModal() {
-            document.getElementById('gemini-modal').classList.remove('open');
-        }
-
-        async function processGeminiAI() {
-            const logBox = document.getElementById('gemini-log');
-            const apiKey = document.getElementById('gemini-key').value.trim();
-            if(apiKey !== "") localStorage.setItem("bcube_api_key", apiKey);
-
-            const p = currentProgram;
-            const durationMin = parseInt(document.getElementById('duration-input').value) || 30;
-            const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
-            const maxSpeed = Math.max(...p.speed);
-            const maxIncline = Math.max(...p.incline);
-            const avgSpeed = avg(p.speed).toFixed(1);
-            const avgIncline = avg(p.incline).toFixed(1);
-            const availableCategories = Object.keys(videoDB).join(", ");
-
-            logBox.innerText = `[INFO] Profilo allenamento:\n- Programma: ${p.name} (${durationMin} min)\n- Velocità: media ${avgSpeed}, max ${maxSpeed} km/h\n- Pendenza: media ${avgIncline}%, max ${maxIncline}%\n\n`;
-
-            let category = mockGeminiEngine(maxSpeed, maxIncline);
-            let searchQuery = null;
-
-            if(apiKey !== "") {
-                logBox.innerText += "[AI] Interrogazione Gemini in corso...\n";
-                try {
-                    const prompt = `Sei un personal trainer esperto di video "virtual walk / virtual run" su YouTube per tapis roulant.
-
-PROFILO ALLENAMENTO (10 segmenti uguali, totale ${durationMin} minuti):
-- Programma: ${p.name}
-- Velocità per segmento (km/h): ${p.speed.join(", ")}
-- Pendenza per segmento (%): ${p.incline.join(", ")}
-- Velocità: media ${avgSpeed}, max ${maxSpeed} km/h | Pendenza: media ${avgIncline}%, max ${maxIncline}%
-
-COMPITI:
-1. Scegli lo scenario più coerente con l'intensità, SOLO tra: [${availableCategories}]
-2. Scrivi una query di ricerca YouTube in INGLESE (max 8 parole) per trovare un video POV in prima persona adatto: usa termini come "virtual walk" se velocità media < 6 km/h, "virtual run" se superiore, "virtual hike"/"trail" se la pendenza media supera il 6%; aggiungi "4K POV treadmill" e l'ambientazione dello scenario.
-3. Spiega il motivo in una frase breve.
-
-Rispondi SOLO con JSON valido, senza markdown né testo extra:
-{"categoria": "...", "query": "...", "motivo": "..."}`;
-
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-
-                    if (!response.ok) throw new Error("API Key errata o quota esaurita.");
-                    const data = await response.json();
-                    let resText = data.candidates[0].content.parts[0].text.trim();
-                    resText = resText.replace(/```json|```/g, "").trim();
-                    const parsed = JSON.parse(resText);
-
-                    if (parsed.categoria && videoDB[parsed.categoria.toLowerCase()]) {
-                        category = parsed.categoria.toLowerCase();
-                    }
-                    if (parsed.query) searchQuery = parsed.query;
-                    logBox.innerText += `[AI] Scenario: ${category.toUpperCase().replace(/_/g, ' ')}\n`;
-                    if (parsed.motivo) logBox.innerText += `[AI] Motivo: ${parsed.motivo}\n`;
-                    if (searchQuery) logBox.innerText += `[AI] Query generata: "${searchQuery}"\n`;
-                } catch (e) {
-                    logBox.innerText += `[AVVISO] Errore Gemini (${e.message}). Attivo motore offline...\n`;
-                    category = mockGeminiEngine(maxSpeed, maxIncline);
-                }
-
-                // Ricerca reale su YouTube Data API v3 (chiave separata da quella Gemini).
-                // Il filtro videoEmbeddable=true restituisce SOLO video incorporabili,
-                // eliminando alla radice gli errori 101/150/153 da video bloccati.
-                const queryToUse = searchQuery || categoryQueries[category];
-                const ytKey = getYtApiKey();
-                if (ytKey) {
-                    logBox.innerText += `\n[YT] Cerco su YouTube: "${queryToUse}"...\n`;
-                    const ok = await searchYouTubeEmbeddable(queryToUse, category, ytKey);
-                    if (ok) {
-                        logBox.innerText += `[YT] Trovati ${videoQueue.length} video incorporabili verificati.\n`;
-                        playCurrentQueueVideo();
-                        logBox.innerText += `\n✅ FATTO! Chiudi il popup.`;
-                        return;
-                    }
-                    logBox.innerText += `[YT] Ricerca senza risultati validi. Uso la libreria video interna...\n`;
-                } else {
-                    logBox.innerText += `\n[YT] Nessuna chiave YouTube Data API inserita: uso la libreria interna (video non garantiti al 100%).\n`;
-                }
-            } else {
-                logBox.innerText += "[AI] Nessuna chiave Gemini: motore offline in uso...\n";
-                await new Promise(r => setTimeout(r, 600));
-                logBox.innerText += `[AI] Assegnato: ${category.toUpperCase().replace(/_/g, ' ')}\n`;
-
-                const ytKey = getYtApiKey();
-                const queryFallback = categoryQueries[category];
-                if (ytKey) {
-                    logBox.innerText += `\n[YT] Cerco su YouTube: "${queryFallback}"...\n`;
-                    const ok = await searchYouTubeEmbeddable(queryFallback, category, ytKey);
-                    if (ok) {
-                        logBox.innerText += `[YT] Trovati ${videoQueue.length} video incorporabili verificati.\n`;
-                        playCurrentQueueVideo();
-                        logBox.innerText += `\n✅ FATTO! Chiudi il popup.`;
-                        return;
-                    }
-                    logBox.innerText += `[YT] Ricerca senza risultati validi. Uso la libreria video interna...\n`;
-                }
-            }
-
-            buildQueueFromCategory(category);
-            playCurrentQueueVideo();
-            logBox.innerText += `\n✅ FATTO! Chiudi il popup.`;
-        }
-
-        function mockGeminiEngine(speed, incline) {
-            if (incline >= 8) return "alpi_svizzere";
-            if (incline >= 5 && speed < 8) return "sentiero_roccioso";
-            if (speed >= 10) return "tokyo_night_run";
-            if (speed >= 9 && incline <= 4) return "corsa_in_spiaggia";
-            if (speed >= 7) return "central_park_ny";
-            if (incline >= 3) return "foresta_montana";
-            return "spiaggia_tramonto";
+        function classifyProgram(avgSpeed, avgIncline) {
+            const key = `${speedBand(avgSpeed)}_${inclineBand(avgIncline)}`;
+            return classificationMatrix[key] || "camminata_blanda_collina";
         }
 
         function renderTableAndChart(segMinutes) {
