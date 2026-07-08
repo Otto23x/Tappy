@@ -191,6 +191,108 @@
             grid-column: span 2;
         }
 
+        /* ═══════════ NAVIGAZIONE ALLENAMENTO / STORICO ═══════════ */
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 10px 16px 0;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .nav-tabs button {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .nav-tabs button.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+        }
+
+        /* ═══════════ STORICO: profilo, riepiloghi, grafico, sessioni ═══════════ */
+        .history-wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .period-tabs {
+            display: flex;
+            gap: 6px;
+        }
+        .period-tabs button {
+            flex: 1;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-muted);
+            padding: 7px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .period-tabs button.active {
+            background: var(--accent-orange);
+            color: white;
+            border-color: var(--accent-orange);
+        }
+        .session-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 4px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+            gap: 8px;
+        }
+        .session-row:last-child { border-bottom: none; }
+        .session-meta { color: var(--text-muted); font-size: 11px; }
+        .session-del {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 8px;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .profile-grid .full { grid-column: span 2; }
+        .profile-grid label {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .profile-grid input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
         .stat-label {
             font-size: 11px;
             text-transform: uppercase;
@@ -511,18 +613,37 @@
             <div class="logo-box">Bcube</div>
             <div class="logo-text">Dashboard</div>
         </div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div id="status-tag" style="font-size: 12px; color: var(--text-muted);">Pronto</div>
-            <button onclick="openSettingsModal()" title="Impostazioni API" style="background:transparent; border:1px solid var(--border-color); color: var(--text-muted); border-radius: 8px; padding: 6px 8px; cursor:pointer; font-size: 14px;">⚙️</button>
-        </div>
+        <div id="status-tag" style="font-size: 12px; color: var(--text-muted);">Pronto</div>
     </header>
 
+    <div class="nav-tabs">
+        <button id="nav-workout" class="active" onclick="switchView('workout')">🏃 Allenamento</button>
+        <button id="nav-history" onclick="switchView('history')">📊 Storico</button>
+    </div>
+
+    <div id="view-workout" class="view active">
     <div class="main-grid">
         <div class="panel">
             <div class="control-group">
                 <label for="program-select">Programma</label>
                 <select id="program-select" onchange="loadProgram()"></select>
                 <div id="program-preview" style="font-size: 13px; color: var(--accent-blue); font-weight: 600; margin-top: 2px;"></div>
+            </div>
+
+            <div class="control-group" id="manual-picker-wrapper" style="display:none;">
+                <label>Allenamento Manuale — scegli andatura e terreno</label>
+                <div style="display:flex; gap:8px;">
+                    <select id="manual-andatura" onchange="applyManualSelection()" style="flex:1;">
+                        <option value="passeggiata">🚶 Passeggiata</option>
+                        <option value="jogging">🏃 Jogging</option>
+                        <option value="corsa">🏃‍♂️ Corsa</option>
+                    </select>
+                    <select id="manual-terreno" onchange="applyManualSelection()" style="flex:1;">
+                        <option value="pianura">🏙️ Pianura</option>
+                        <option value="collina">⛰️ Collina</option>
+                        <option value="montagna">🏔️ Montagna</option>
+                    </select>
+                </div>
             </div>
 
             <div class="control-group">
@@ -538,9 +659,15 @@
                 </div>
             </div>
 
+            <div class="control-group">
+                <label>Tapis Bluetooth (sperimentale, sola lettura)</label>
+                <button id="btn-bluetooth" class="btn" style="background: var(--border-color); color: white;" onclick="connectBluetoothTreadmill()">🔗 Collega Bluetooth</button>
+                <div id="bt-status" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Non connesso. Funziona solo se il tapis espone lo standard FTMS (il Bcube A8 Plus è certificato ufficialmente solo per le app Kinomap/AnyRun, quindi non è garantito).</div>
+            </div>
+
             <div style="display: flex; gap: 8px;">
                 <button id="btn-action" class="btn btn-start" style="flex: 2;" onclick="toggleTimer()">Avvia</button>
-                <button id="btn-reset" class="btn btn-reset" style="flex: 1;" onclick="resetTimer()">Reset</button>
+                <button id="btn-reset" class="btn btn-reset" style="flex: 1;" onclick="handleResetButtonClick()">Reset</button>
             </div>
 
             <div class="live-dashboard">
@@ -563,6 +690,10 @@
                 <div class="stat-box">
                     <div class="stat-label">Pendenza</div>
                     <div id="live-incline" class="stat-value incline">—</div>
+                </div>
+                <div class="stat-box full-width" id="bt-live-box" style="display:none;">
+                    <div class="stat-label">📡 Tapis (Bluetooth reale)</div>
+                    <div class="stat-value" style="font-size:14px;"><span id="bt-live-speed">—</span> km/h · <span id="bt-live-incline">—</span>%</div>
                 </div>
             </div>
 
@@ -642,26 +773,82 @@
             </div>
         </div>
     </div>
+    </div><!-- /view-workout -->
 
-    <!-- POPUP IMPOSTAZIONI: unico punto dove inserire la chiave API -->
-    <div class="modal" id="settings-modal">
-        <div class="modal-content">
-            <div class="modal-header">⚙️ Impostazioni API</div>
+    <div id="view-history" class="view">
+        <div class="history-wrap">
 
-            <div class="control-group">
-                <label style="font-size: 10px;">YouTube Data API Key (da Google Cloud Console) — trova video verificati e incorporabili</label>
-                <div style="display: flex; gap: 6px;">
-                    <input type="password" id="yt-api-key" placeholder="Incolla qui la tua YouTube API Key..." style="flex: 1; font-size:12px; padding:8px;" onchange="saveYtKey()">
-                    <button class="btn btn-reset" onclick="clearYtKey()" style="padding: 8px 12px; font-size: 11px;">Pulisci</button>
+            <div class="panel">
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">👤 Profilo</label>
+                <div class="profile-grid">
+                    <div class="full">
+                        <label>Nome</label>
+                        <input type="text" id="profile-name" placeholder="Il tuo nome">
+                    </div>
+                    <div>
+                        <label>Peso (kg)</label>
+                        <input type="number" id="profile-weight" step="0.1" placeholder="es. 75">
+                    </div>
+                    <div>
+                        <label>Altezza (cm)</label>
+                        <input type="number" id="profile-height" step="1" placeholder="es. 175">
+                    </div>
+                    <div class="full">
+                        <label>Massa grassa % (opzionale — la massa magra si calcola da sola)</label>
+                        <input type="number" id="profile-bodyfat" step="0.1" placeholder="es. 18">
+                    </div>
                 </div>
-                <div id="yt-key-status" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Senza chiave: uso la libreria video interna (non garantita al 100%).</div>
+                <button class="btn btn-start" style="margin-top:10px;" onclick="saveProfile()">Salva Profilo</button>
+                <div id="profile-status" style="font-size:11px; color:var(--text-muted); margin-top:6px;"></div>
             </div>
 
-            <div style="display:flex; justify-content: flex-end;">
-                <button class="btn" onclick="closeSettingsModal()" style="font-size:12px; padding:6px 12px; background:var(--border-color); color:white;">Chiudi</button>
+            <div class="panel">
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">📈 Riepilogo</label>
+                <div class="period-tabs" style="margin-bottom:10px;">
+                    <button id="period-week" class="active" onclick="setSummaryPeriod('week')">Settimana</button>
+                    <button id="period-month" onclick="setSummaryPeriod('month')">Mese</button>
+                    <button id="period-year" onclick="setSummaryPeriod('year')">Anno</button>
+                    <button id="period-all" onclick="setSummaryPeriod('all')">Totale</button>
+                </div>
+                <div class="summary-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Km percorsi</div>
+                        <div id="sum-km" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Tempo</div>
+                        <div id="sum-time" class="stat-value">0h 0m</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Calorie</div>
+                        <div id="sum-kcal" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Vel. media</div>
+                        <div id="sum-speed" class="stat-value">0</div>
+                    </div>
+                </div>
             </div>
+
+            <div class="panel">
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">📊 Andamento (km per periodo)</label>
+                <div id="trend-chart-mount" style="width:100%; overflow-x:auto;"></div>
+            </div>
+
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label style="font-size:13px; font-weight:700;">🗒️ Sessioni</label>
+                    <div style="display:flex; gap:6px;">
+                        <button class="btn btn-reset" style="padding:5px 10px; font-size:11px; margin-top:0;" onclick="exportHistory()">Esporta</button>
+                        <button class="btn btn-reset" style="padding:5px 10px; font-size:11px; margin-top:0; background-color:#7f1d1d;" onclick="clearHistoryConfirm()">Cancella tutto</button>
+                    </div>
+                </div>
+                <div id="session-list"><div class="session-meta">Nessuna sessione ancora registrata: completa un allenamento per vederlo qui.</div></div>
+            </div>
+
         </div>
     </div>
+
 
     <script>
         // CONTROLLO FONDAMENTALE: Rileva se il file è aperto localmente (file:///)
@@ -670,6 +857,7 @@
         }
 
         const programs = [
+            {"name": "M1", "isManual": true, "speed": [5,5,5,5,5,5,5,5,5,5], "incline": [2,2,2,2,2,2,2,2,2,2]},
             {"name": "P1", "speed": [1.0, 3.0, 5.0, 5.0, 5.0, 7.0, 7.0, 5.0, 3.0, 2.0], "incline": [2, 2, 8, 6, 6, 4, 4, 6, 2, 2]},
             {"name": "P2", "speed": [2.0, 3.0, 5.0, 8.0, 5.0, 5.0, 6.0, 8.0, 4.0, 3.0], "incline": [3, 3, 2, 2, 8, 8, 4, 4, 4, 4]},
             {"name": "P3", "speed": [2.0, 3.0, 7.0, 8.0, 5.0, 5.0, 5.0, 8.0, 4.0, 3.0], "incline": [1, 2, 5, 7, 7, 4, 4, 6, 2, 2]},
@@ -712,6 +900,8 @@
         let isRunning = false;
         let totalSeconds = 0;
         let elapsedSeconds = 0;
+        let runStartTimestamp = null;   // Date.now() dell'ultimo "Avvia/Riprendi"
+        let accumulatedElapsedMs = 0;   // ms accumulati nelle sessioni precedenti (prima dell'ultima pausa)
         let currentProgram = null;
         let segmentDurationSeconds = 0;
         let isVideoModeActive = false;
@@ -734,58 +924,6 @@
             "trail_running_montagna":   ["BKnvF9G5pG8", "jw15i-uLdOk"]
         };
 
-        // Query di ricerca YouTube per ogni scenario (usate con la YouTube Data API,
-        // che è il percorso raccomandato: garantisce video davvero incorporabili).
-        // Più varianti per categoria: ad ogni riproduzione ne scegliamo una a caso,
-        // così i risultati cambiano nel tempo senza bisogno di un'AI che li generi.
-        const categoryQueries = {
-            "passeggiata_citta": [
-                "slow relaxing city walk 4K POV treadmill",
-                "leisurely city stroll 4K virtual walk",
-                "calm downtown walking tour 4K POV"
-            ],
-            "jogging_citta": [
-                "city jogging virtual run 4K POV treadmill",
-                "urban jog scenery 4K treadmill workout",
-                "moderate pace city run 4K POV"
-            ],
-            "corsa_citta": [
-                "fast city run virtual treadmill 4K POV",
-                "urban running workout scenery 4K",
-                "intense city sprint POV treadmill 4K"
-            ],
-            "passeggiata_collina": [
-                "gentle hill walk virtual treadmill 4K nature",
-                "easy countryside walk 4K POV hill",
-                "peaceful hillside stroll 4K treadmill"
-            ],
-            "camminata_blanda_collina": [
-                "moderate hill walking trail virtual treadmill 4K",
-                "hill trail walk scenery 4K POV",
-                "countryside trail walk 4K treadmill workout"
-            ],
-            "corsa_collina": [
-                "hill trail running virtual treadmill 4K POV",
-                "trail run hill scenery 4K workout",
-                "cross country run hills 4K POV"
-            ],
-            "camminata_ripida_montagna": [
-                "steep mountain walk virtual treadmill 4K POV slow",
-                "alpine trail slow walk 4K POV",
-                "steep incline mountain hike 4K treadmill"
-            ],
-            "salita_montagna": [
-                "mountain incline hike virtual treadmill 4K POV",
-                "uphill mountain trail 4K POV workout",
-                "climbing mountain trail scenery 4K"
-            ],
-            "trail_running_montagna": [
-                "steep mountain trail running virtual treadmill 4K POV",
-                "mountain trail run intense 4K POV",
-                "alpine trail running workout scenery 4K"
-            ]
-        };
-
         // Etichette leggibili per il log, lo stato video e l'anteprima programma.
         // Schema fisso: {passeggiata, jogging, corsa} × {pianura, collina, montagna}
         // (le chiavi interne restano quelle di sempre, cambia solo il testo mostrato)
@@ -801,11 +939,6 @@
             "trail_running_montagna":    "Corsa in montagna"
         };
 
-        function pickQueryFor(category) {
-            const variants = categoryQueries[category] || [category.replace(/_/g, ' ')];
-            return variants[Math.floor(Math.random() * variants.length)];
-        }
-
         function shuffleArray(arr) {
             const a = arr.slice();
             for (let i = a.length - 1; i > 0; i--) {
@@ -816,12 +949,6 @@
         }
 
         window.onload = function() {
-            const savedYtKey = localStorage.getItem("bcube_yt_api_key");
-            if(savedYtKey) {
-                document.getElementById('yt-api-key').value = savedYtKey;
-                document.getElementById('yt-key-status').innerText = "✅ Chiave salvata: ricerca YouTube reale attiva.";
-            }
-
             const select = document.getElementById('program-select');
             programs.forEach(p => {
                 let opt = document.createElement('option');
@@ -831,38 +958,156 @@
             });
             
             loadProgram();
+            loadProfileIntoForm();
+            updateHeaderName();
+            renderHistoryViews();
         };
 
-        function openSettingsModal() {
-            document.getElementById('settings-modal').classList.add('open');
+        // Quando si torna sulla pagina (es. dopo aver cambiato canzone in un'altra
+        // app), il timer si ricalcola subito dall'orologio reale: nessun ritardo
+        // da recuperare, il valore è già corretto al millisecondo.
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isRunning) {
+                tick();
+            }
+        });
+
+        /* ═══════════════════════════════════════════════════════════════
+           BLUETOOTH TAPIS ROULANT (sperimentale, standard FTMS, sola lettura)
+           Il Bcube A8 Plus è certificato ufficialmente solo per le app Kinomap
+           e AnyRun (protocollo proprietario non documentato pubblicamente).
+           Questo codice usa lo standard aperto "Fitness Machine Service" (FTMS):
+           funziona SOLO se il tapis lo espone anche lui, cosa non garantita per
+           questo modello. Legge soltanto velocità/pendenza reali per mostrarle
+           a video — non invia comandi al motore (rischio di sicurezza + nessun
+           protocollo di controllo documentato per questo tapis).
+           ═══════════════════════════════════════════════════════════════ */
+        const FTMS_SERVICE_UUID = 0x1826;          // Fitness Machine Service
+        const TREADMILL_DATA_CHAR_UUID = 0x2ACD;   // Treadmill Data (notify)
+        let btDevice = null;
+
+        function setBtStatus(msg) {
+            const el = document.getElementById('bt-status');
+            if (el) el.innerText = msg;
         }
 
-        function closeSettingsModal() {
-            document.getElementById('settings-modal').classList.remove('open');
-        }
+        async function connectBluetoothTreadmill() {
+            if (!navigator.bluetooth) {
+                setBtStatus("⚠️ Questo browser non supporta il Bluetooth Web (serve Chrome su Android; iOS/Safari non è supportato).");
+                return;
+            }
+            try {
+                setBtStatus("🔍 Cerca il tapis nelle vicinanze (assicurati che sia acceso)...");
+                btDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ services: [FTMS_SERVICE_UUID] }],
+                    optionalServices: [FTMS_SERVICE_UUID]
+                });
+                btDevice.addEventListener('gattserverdisconnected', onBtDisconnected);
 
-        function saveYtKey() {
-            const key = document.getElementById('yt-api-key').value.trim();
-            if (key !== "") {
-                localStorage.setItem("bcube_yt_api_key", key);
-                document.getElementById('yt-key-status').innerText = "✅ Chiave salvata: ricerca YouTube reale attiva.";
-                triggerVideoUpdate();
+                setBtStatus("🔄 Connessione a " + (btDevice.name || "dispositivo") + "...");
+                const server = await btDevice.gatt.connect();
+                const service = await server.getPrimaryService(FTMS_SERVICE_UUID);
+                const char = await service.getCharacteristic(TREADMILL_DATA_CHAR_UUID);
+                await char.startNotifications();
+                char.addEventListener('characteristicvaluechanged', handleTreadmillData);
+
+                document.getElementById('bt-live-box').style.display = 'flex';
+                setBtStatus("✅ Connesso a " + (btDevice.name || "tapis") + ". Dati reali in arrivo...");
+            } catch (e) {
+                if (e.name === 'NotFoundError') {
+                    setBtStatus("⚠️ Nessun tapis con dati Bluetooth standard (FTMS) trovato nelle vicinanze. Il tuo Bcube A8 Plus è certificato solo per Kinomap/AnyRun: è possibile che non esponga questo standard, quindi potrebbe non essere collegabile da un browser.");
+                } else if (e.name === 'SecurityError') {
+                    setBtStatus("⚠️ Il Bluetooth richiede una pagina https:// (non file:///). Apri l'app dal link GitHub Pages.");
+                } else {
+                    setBtStatus("⚠️ Errore Bluetooth: " + e.message);
+                }
             }
         }
 
-        function clearYtKey() {
-            localStorage.removeItem("bcube_yt_api_key");
-            document.getElementById('yt-api-key').value = "";
-            document.getElementById('yt-key-status').innerText = "Senza chiave: uso la libreria video interna (non garantita al 100%).";
+        function onBtDisconnected() {
+            setBtStatus("🔌 Tapis disconnesso.");
+            document.getElementById('bt-live-box').style.display = 'none';
         }
 
-        function getYtApiKey() {
-            return document.getElementById('yt-api-key').value.trim();
+        // Analizza il pacchetto "Treadmill Data" secondo lo standard FTMS:
+        // i primi 2 byte sono i flag che indicano quali campi opzionali seguono
+        // la velocità istantanea (sempre presente).
+        function parseTreadmillData(dataView) {
+            let offset = 0;
+            const flags = dataView.getUint16(offset, true); offset += 2;
+            const out = {};
+            out.speed = dataView.getUint16(offset, true) / 100; offset += 2; // km/h
+            if (flags & 0x0001) offset += 2;  // Average Speed (non ci serve)
+            if (flags & 0x0002) offset += 3;  // Total Distance (24-bit)
+            if (flags & 0x0004) {              // Inclination + Ramp Angle
+                out.incline = dataView.getInt16(offset, true) / 10; offset += 2;
+                offset += 2;
+            }
+            return out;
+        }
+
+        function handleTreadmillData(event) {
+            try {
+                const data = parseTreadmillData(event.target.value);
+                if (typeof data.speed === 'number' && !isNaN(data.speed)) {
+                    document.getElementById('bt-live-speed').innerText = data.speed.toFixed(1);
+                }
+                if (typeof data.incline === 'number' && !isNaN(data.incline)) {
+                    document.getElementById('bt-live-incline').innerText = data.incline.toFixed(1);
+                }
+            } catch (e) { /* pacchetto non riconosciuto: ignoro senza bloccare l'app */ }
+        }
+
+        // Mappatura diretta delle 9 combinazioni per l'Allenamento Manuale (M1).
+        // Bypassa completamente il calcolo automatico: qui la categoria è scelta
+        // dall'utente, non dedotta dalla velocità/pendenza — così anche le
+        // combinazioni che i 36 programmi P1-P36 non toccano mai (es. "corsa in
+        // pianura", velocità alta + pendenza piatta) restano sempre raggiungibili.
+        const manualMatrixCategory = {
+            "passeggiata_pianura":  "passeggiata_citta",
+            "jogging_pianura":      "jogging_citta",
+            "corsa_pianura":        "corsa_citta",
+            "passeggiata_collina":  "passeggiata_collina",
+            "jogging_collina":      "camminata_blanda_collina",
+            "corsa_collina":        "corsa_collina",
+            "passeggiata_montagna": "camminata_ripida_montagna",
+            "jogging_montagna":     "salita_montagna",
+            "corsa_montagna":       "trail_running_montagna"
+        };
+        const manualSpeedByAndatura = { "passeggiata": 4.5, "jogging": 6.5, "corsa": 9.5 };
+        const manualInclineByTerreno = { "pianura": 2, "collina": 5.5, "montagna": 8.5 };
+        let manualCategory = null;
+
+        function applyManualSelection() {
+            const andatura = document.getElementById('manual-andatura').value;
+            const terreno = document.getElementById('manual-terreno').value;
+            const spd = manualSpeedByAndatura[andatura];
+            const inc = manualInclineByTerreno[terreno];
+            manualCategory = manualMatrixCategory[`${andatura}_${terreno}`];
+
+            currentProgram.speed = Array(10).fill(spd);
+            currentProgram.incline = Array(10).fill(inc);
+
+            calculateSegments();
+            if (isRunning) resetTimer();
+            updateProgramPreview();
+            triggerVideoUpdate();
         }
 
         function loadProgram() {
             const progName = document.getElementById('program-select').value;
             currentProgram = programs.find(p => p.name === progName);
+            const manualWrapper = document.getElementById('manual-picker-wrapper');
+
+            if (currentProgram.isManual) {
+                manualWrapper.style.display = 'flex';
+                applyManualSelection(); // usa i valori di default/attuali dei due select
+                return; // applyManualSelection già chiama calculateSegments/preview/video
+            } else {
+                manualWrapper.style.display = 'none';
+                manualCategory = null;
+            }
+
             calculateSegments();
             if(isRunning) resetTimer();
             updateProgramPreview();
@@ -872,10 +1117,13 @@
         function updateProgramPreview() {
             const el = document.getElementById('program-preview');
             if (!el || !currentProgram) return;
-            const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
-            const avgSpeed = avg(currentProgram.speed);
-            const avgIncline = avg(currentProgram.incline);
-            const category = classifyProgram(avgSpeed, avgIncline);
+            let category;
+            if (currentProgram.isManual && manualCategory) {
+                category = manualCategory;
+            } else {
+                const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
+                category = classifyProgram(avg(currentProgram.speed), avg(currentProgram.incline));
+            }
             el.innerText = "🎬 Ti aspetta: " + (categoryLabels[category] || category);
         }
 
@@ -1055,66 +1303,23 @@
             const list = videoDB[category] || videoDB["camminata_blanda_collina"];
             videoQueue = shuffleArray(list);
             queueIndex = 0;
-            currentQueueLabel = (categoryLabels[category] || category) + " (libreria interna)";
+            currentQueueLabel = (categoryLabels[category] || category);
         }
 
-        // Contatore per scartare risposte di ricerca "vecchie" se l'utente
-        // cambia programma/durata mentre una richiesta è ancora in volo.
-        let videoUpdateToken = 0;
-
-        async function triggerVideoUpdate() {
+        function triggerVideoUpdate() {
             if (!isVideoModeActive || !currentProgram) return;
-            const myToken = ++videoUpdateToken;
 
-            const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
-            const avgSpeed = avg(currentProgram.speed);
-            const avgIncline = avg(currentProgram.incline);
-            const category = classifyProgram(avgSpeed, avgIncline);
-            const ytKey = getYtApiKey();
-
-            if (ytKey) {
-                setVideoStatus("🔎 Cerco su YouTube video verificati per questo scenario...");
-                const query = pickQueryFor(category);
-                const ok = await searchYouTubeEmbeddable(query, category, ytKey, myToken);
-                if (myToken !== videoUpdateToken) return; // superato da un aggiornamento più recente
-                if (ok) { playCurrentQueueVideo(); return; }
-                setVideoStatus("⚠️ Ricerca YouTube non riuscita, uso la libreria interna...");
+            let category;
+            if (currentProgram.isManual && manualCategory) {
+                category = manualCategory;
+            } else {
+                const avg = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
+                category = classifyProgram(avg(currentProgram.speed), avg(currentProgram.incline));
             }
 
             buildQueueFromCategory(category);
             playCurrentQueueVideo();
         }
-
-        // Ricerca reale su YouTube Data API v3, filtrata SOLO su video incorporabili.
-        // Questo è l'unico modo per sapere con certezza, prima di riprodurlo,
-        // che un video non darà errore 101/150/153.
-        async function searchYouTubeEmbeddable(query, label, ytKey, myToken) {
-            try {
-                const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&videoEmbeddable=true&videoSyndicated=true&maxResults=10&q=${encodeURIComponent(query)}&key=${ytKey}`;
-                const res = await fetch(url);
-                if (myToken !== undefined && myToken !== videoUpdateToken) return false;
-                if (!res.ok) {
-                    const errData = await res.json().catch(() => null);
-                    const reason = errData && errData.error && errData.error.message ? errData.error.message : `HTTP ${res.status}`;
-                    setVideoStatus(`⚠️ Errore YouTube API: ${reason}`);
-                    return false;
-                }
-                const data = await res.json();
-                const ids = (data.items || []).map(i => i.id && i.id.videoId).filter(Boolean);
-                if (ids.length === 0) {
-                    setVideoStatus("⚠️ Nessun video incorporabile trovato per questa ricerca.");
-                    return false;
-                }
-                videoQueue = shuffleArray(ids);
-                queueIndex = 0;
-                currentQueueLabel = (label && categoryLabels[label] ? categoryLabels[label] : (label || query)) + " (YouTube, verificato)";
-                return true;
-            } catch (e) {
-                setVideoStatus(`⚠️ Errore di rete verso YouTube: ${e.message}`);
-                return false;
-            }
-        }
-
 
         // Fasce di velocità e pendenza (basate sulla MEDIA del programma, non sui
         // picchi, per riflettere l'intensità reale). Soglie calibrate sulla effettiva
@@ -1237,8 +1442,301 @@
             chartArea.insertBefore(svg, chartArea.firstChild);
         }
 
+        /* ═══════════════════════════════════════════════════════════════
+           STORICO ALLENAMENTI: profilo, calcolo km/calorie, riepiloghi, grafico
+           Tutto salvato in localStorage — quindi già "per persona" in automatico,
+           dato che ogni telefono/browser ha la propria memoria separata.
+           ═══════════════════════════════════════════════════════════════ */
+        const PROFILE_KEY = 'bcube_profile';
+        const HISTORY_KEY = 'bcube_history';
+        let summaryPeriod = 'week';
+
+        function loadProfile() {
+            try {
+                const raw = localStorage.getItem(PROFILE_KEY);
+                return raw ? JSON.parse(raw) : { name: '', weightKg: null, heightCm: null, bodyFatPct: null };
+            } catch (e) { return { name: '', weightKg: null, heightCm: null, bodyFatPct: null }; }
+        }
+        function saveProfileData(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+
+        function loadHistory() {
+            try {
+                const raw = localStorage.getItem(HISTORY_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) { return []; }
+        }
+        function saveHistoryData(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+
+        function saveProfile() {
+            const p = {
+                name: document.getElementById('profile-name').value.trim(),
+                weightKg: parseFloat(document.getElementById('profile-weight').value) || null,
+                heightCm: parseFloat(document.getElementById('profile-height').value) || null,
+                bodyFatPct: parseFloat(document.getElementById('profile-bodyfat').value) || null
+            };
+            saveProfileData(p);
+            document.getElementById('profile-status').innerText = "✅ Profilo salvato" + (p.name ? (", ciao " + p.name + "!") : ".") + (p.weightKg ? "" : " (senza peso le calorie saranno una stima generica su 70 kg).");
+            updateHeaderName();
+            renderHistoryViews();
+        }
+
+        function loadProfileIntoForm() {
+            const p = loadProfile();
+            document.getElementById('profile-name').value = p.name || '';
+            document.getElementById('profile-weight').value = p.weightKg || '';
+            document.getElementById('profile-height').value = p.heightCm || '';
+            document.getElementById('profile-bodyfat').value = p.bodyFatPct || '';
+        }
+
+        function updateHeaderName() {
+            const p = loadProfile();
+            const el = document.querySelector('.logo-text');
+            if (el) el.innerText = p.name ? ('Ciao, ' + p.name) : 'Dashboard';
+        }
+
+        // Distanza percorsa (km): somma velocità × tempo per ogni segmento
+        // effettivamente trascorso (compreso quello parziale in corso).
+        function computeDistanceKm(program, elapsedSec, segDurSec) {
+            let km = 0;
+            let remaining = elapsedSec;
+            for (let i = 0; i < 10 && remaining > 0; i++) {
+                const segSec = Math.min(segDurSec, remaining);
+                km += program.speed[i] * (segSec / 3600);
+                remaining -= segDurSec;
+            }
+            return km;
+        }
+
+        // Calorie: formule metaboliche ACSM (American College of Sports Medicine),
+        // le stesse usate dai tapis roulant professionali — basate su velocità,
+        // pendenza e peso corporeo reale per ogni segmento. Senza peso impostato
+        // uso 70 kg come stima generica (dichiarata nell'interfaccia).
+        function computeCaloriesKcal(program, elapsedSec, segDurSec, weightKg) {
+            const w = weightKg || 70;
+            let kcal = 0;
+            let remaining = elapsedSec;
+            for (let i = 0; i < 10 && remaining > 0; i++) {
+                const segSec = Math.min(segDurSec, remaining);
+                const minutes = segSec / 60;
+                const speedKmh = program.speed[i];
+                const inclinePct = program.incline[i];
+                const speedMmin = speedKmh * 1000 / 60;
+                const grade = inclinePct / 100;
+                const vo2 = speedKmh <= 7
+                    ? 0.1 * speedMmin + 1.8 * speedMmin * grade + 3.5   // equazione ACSM camminata
+                    : 0.2 * speedMmin + 0.9 * speedMmin * grade + 3.5;  // equazione ACSM corsa
+                const kcalPerMin = (vo2 * w) / 1000 * 5; // 1 L di O2 ≈ 5 kcal
+                kcal += kcalPerMin * minutes;
+                remaining -= segDurSec;
+            }
+            return kcal;
+        }
+
+        function logSession(complete, elapsedSecOverride) {
+            if (!currentProgram) return;
+            const elapsed = Math.min(
+                elapsedSecOverride != null ? elapsedSecOverride : getElapsedSeconds(),
+                totalSeconds
+            );
+            if (elapsed < 30) return; // troppo breve per avere senso
+
+            const profile = loadProfile();
+            const km = computeDistanceKm(currentProgram, elapsed, segmentDurationSeconds);
+            const kcal = computeCaloriesKcal(currentProgram, elapsed, segmentDurationSeconds, profile.weightKg);
+            const avgSpeed = elapsed > 0 ? km / (elapsed / 3600) : 0;
+            const label = (currentProgram.isManual && manualCategory)
+                ? (categoryLabels[manualCategory] || 'Manuale')
+                : currentProgram.name;
+
+            const entry = {
+                id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+                dateISO: new Date().toISOString(),
+                program: label,
+                durationSec: elapsed,
+                km: km,
+                kcal: kcal,
+                avgSpeed: avgSpeed,
+                complete: !!complete
+            };
+            const history = loadHistory();
+            history.push(entry);
+            saveHistoryData(history);
+            renderHistoryViews();
+        }
+
+        function deleteSession(id) {
+            saveHistoryData(loadHistory().filter(e => e.id !== id));
+            renderHistoryViews();
+        }
+
+        function exportHistory() {
+            const data = { profile: loadProfile(), history: loadHistory() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'bcube_storico_' + new Date().toISOString().slice(0, 10) + '.json';
+            a.click();
+        }
+
+        function clearHistoryConfirm() {
+            if (confirm('Cancellare TUTTO lo storico allenamenti? Non si può annullare.')) {
+                saveHistoryData([]);
+                renderHistoryViews();
+            }
+        }
+
+        function switchView(view) {
+            document.getElementById('view-workout').classList.toggle('active', view === 'workout');
+            document.getElementById('view-history').classList.toggle('active', view === 'history');
+            document.getElementById('nav-workout').classList.toggle('active', view === 'workout');
+            document.getElementById('nav-history').classList.toggle('active', view === 'history');
+            if (view === 'history') renderHistoryViews();
+        }
+
+        function setSummaryPeriod(p) {
+            summaryPeriod = p;
+            ['week', 'month', 'year', 'all'].forEach(k =>
+                document.getElementById('period-' + k).classList.toggle('active', k === p)
+            );
+            renderHistoryViews();
+        }
+
+        function isInPeriod(dateISO, period) {
+            const d = new Date(dateISO);
+            const now = new Date();
+            if (period === 'all') return true;
+            if (period === 'year') return d.getFullYear() === now.getFullYear();
+            if (period === 'month') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+            if (period === 'week') {
+                const start = getWeekStart(now);
+                const end = new Date(start); end.setDate(start.getDate() + 7);
+                return d >= start && d < end;
+            }
+            return false;
+        }
+
+        function getWeekStart(d) {
+            const day = (d.getDay() + 6) % 7; // lunedì = 0
+            const start = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day);
+            start.setHours(0, 0, 0, 0);
+            return start;
+        }
+
+        function formatHoursMinutes(totalSec) {
+            const h = Math.floor(totalSec / 3600);
+            const m = Math.round((totalSec % 3600) / 60);
+            return h + 'h ' + m + 'm';
+        }
+
+        function renderSummary() {
+            const history = loadHistory();
+            const filtered = history.filter(e => isInPeriod(e.dateISO, summaryPeriod));
+            const totalKm = filtered.reduce((s, e) => s + e.km, 0);
+            const totalSec = filtered.reduce((s, e) => s + e.durationSec, 0);
+            const totalKcal = filtered.reduce((s, e) => s + e.kcal, 0);
+            const avgSpeed = totalSec > 0 ? totalKm / (totalSec / 3600) : 0;
+
+            document.getElementById('sum-km').innerText = totalKm.toFixed(1);
+            document.getElementById('sum-time').innerText = formatHoursMinutes(totalSec);
+            document.getElementById('sum-kcal').innerText = Math.round(totalKcal);
+            document.getElementById('sum-speed').innerText = avgSpeed.toFixed(1) + ' km/h';
+        }
+
+        function buildBuckets(history, period) {
+            const now = new Date();
+            const buckets = [];
+            if (period === 'week') {
+                for (let i = 7; i >= 0; i--) {
+                    const start = getWeekStart(now);
+                    start.setDate(start.getDate() - i * 7);
+                    const end = new Date(start); end.setDate(start.getDate() + 7);
+                    buckets.push({ start, end, label: start.getDate() + '/' + (start.getMonth() + 1), km: 0 });
+                }
+            } else if (period === 'year') {
+                for (let i = 4; i >= 0; i--) {
+                    const y = now.getFullYear() - i;
+                    buckets.push({ start: new Date(y, 0, 1), end: new Date(y + 1, 0, 1), label: String(y), km: 0 });
+                }
+            } else { // 'month' o 'all' -> ultimi 6 mesi
+                for (let i = 5; i >= 0; i--) {
+                    const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+                    buckets.push({ start, end, label: start.toLocaleDateString('it-IT', { month: 'short' }), km: 0 });
+                }
+            }
+            history.forEach(e => {
+                const d = new Date(e.dateISO);
+                for (const b of buckets) {
+                    if (d >= b.start && d < b.end) { b.km += e.km; break; }
+                }
+            });
+            return buckets;
+        }
+
+        function renderTrendChart() {
+            const history = loadHistory();
+            const mount = document.getElementById('trend-chart-mount');
+            if (history.length === 0) {
+                mount.innerHTML = '<div class="session-meta">Ancora nessun dato da mostrare: completa un allenamento.</div>';
+                return;
+            }
+            const buckets = buildBuckets(history, summaryPeriod);
+            const maxKm = Math.max(1, ...buckets.map(b => b.km));
+            const barW = 28, gap = 46;
+            const w = Math.max(300, buckets.length * gap + 10);
+            let bars = '';
+            buckets.forEach((b, i) => {
+                const barH = Math.max(2, (b.km / maxKm) * 90);
+                const x = i * gap + 10;
+                const y = 110 - barH;
+                bars += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="var(--accent-blue)"/>`;
+                bars += `<text x="${x + barW / 2}" y="125" font-size="9" fill="var(--text-muted)" text-anchor="middle">${b.label}</text>`;
+                bars += `<text x="${x + barW / 2}" y="${y - 4}" font-size="9" fill="var(--text-main)" text-anchor="middle">${b.km.toFixed(1)}</text>`;
+            });
+            mount.innerHTML = `<svg viewBox="0 0 ${w} 140" width="${w}" height="140" style="min-width:${w}px;">${bars}</svg>`;
+        }
+
+        function renderSessionList() {
+            const history = loadHistory().slice().sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
+            const mount = document.getElementById('session-list');
+            if (history.length === 0) {
+                mount.innerHTML = '<div class="session-meta">Nessuna sessione ancora registrata: completa un allenamento per vederlo qui.</div>';
+                return;
+            }
+            mount.innerHTML = history.slice(0, 50).map(e => {
+                const d = new Date(e.dateISO);
+                const dateStr = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
+                    ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                return `<div class="session-row">
+                    <div>
+                        <div>${e.program}${e.complete ? '' : ' (parziale)'}</div>
+                        <div class="session-meta">${dateStr} · ${formatHoursMinutes(e.durationSec)} · ${e.km.toFixed(2)} km · ${Math.round(e.kcal)} kcal · ${e.avgSpeed.toFixed(1)} km/h</div>
+                    </div>
+                    <button class="session-del" onclick="deleteSession('${e.id}')">🗑️</button>
+                </div>`;
+            }).join('');
+        }
+
+        function renderHistoryViews() {
+            renderSummary();
+            renderTrendChart();
+            renderSessionList();
+        }
+
+        function handleResetButtonClick() {
+            const currentElapsed = getElapsedSeconds();
+            if (currentElapsed >= 60) {
+                const km = computeDistanceKm(currentProgram, Math.min(currentElapsed, totalSeconds), segmentDurationSeconds);
+                if (confirm(`Vuoi salvare questo allenamento nello storico prima di azzerarlo? (${formatHoursMinutes(currentElapsed)}, ${km.toFixed(2)} km)`)) {
+                    logSession(false, currentElapsed);
+                }
+            }
+            resetTimer();
+        }
+
         function toggleTimer() {
             if (isRunning) {
+                accumulatedElapsedMs += Date.now() - runStartTimestamp;
                 clearInterval(timerId);
                 isRunning = false;
                 document.getElementById('btn-action').innerText = "Riprendi";
@@ -1247,11 +1745,12 @@
                 document.getElementById('status-tag').style.color = "var(--accent-orange)";
             } else {
                 isRunning = true;
+                runStartTimestamp = Date.now();
                 document.getElementById('btn-action').innerText = "Pausa";
                 document.getElementById('btn-action').className = "btn btn-pause";
                 document.getElementById('status-tag').innerText = "In Corso...";
                 document.getElementById('status-tag').style.color = "#22c55e";
-                timerId = setInterval(tick, 1000);
+                timerId = setInterval(tick, 500);
             }
         }
 
@@ -1259,6 +1758,8 @@
             clearInterval(timerId);
             isRunning = false;
             elapsedSeconds = 0;
+            accumulatedElapsedMs = 0;
+            runStartTimestamp = null;
             document.getElementById('btn-action').innerText = "Avvia";
             document.getElementById('btn-action').className = "btn btn-start";
             document.getElementById('status-tag').innerText = "Pronto";
@@ -1275,9 +1776,20 @@
             calculateSegments();
         }
 
+        // Calcola i secondi trascorsi dall'orologio reale del dispositivo (Date.now()),
+        // non contando quanti tick di setInterval sono scattati. Questo elimina
+        // qualunque deriva dovuta a rallentamenti del browser in background
+        // (es. quando si cambia app per la musica): appena la scheda torna attiva,
+        // il valore si "aggiusta" istantaneamente a quello corretto.
+        function getElapsedSeconds() {
+            const runningMs = isRunning ? (Date.now() - runStartTimestamp) : 0;
+            return Math.floor((accumulatedElapsedMs + runningMs) / 1000);
+        }
+
         function tick() {
-            elapsedSeconds++;
+            elapsedSeconds = getElapsedSeconds();
             if (elapsedSeconds > totalSeconds) {
+                logSession(true, totalSeconds);
                 clearInterval(timerId);
                 isRunning = false;
                 alert("Allenamento Completato! Ottimo lavoro!");
