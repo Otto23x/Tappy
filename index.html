@@ -819,13 +819,105 @@
             </div>
 
             <div class="panel">
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">🔗 Connessioni</label>
+
+                <div class="profile-grid">
+                    <div class="full">
+                        <label>Gemini API Key (Google AI Studio) — per il piano di allenamento e l'analisi dei progressi</label>
+                        <input type="password" id="ai-key" placeholder="Incolla qui la tua Gemini API Key..." onchange="saveAiKey()">
+                    </div>
+                </div>
+                <div id="ai-key-status" style="font-size:11px; color:var(--text-muted); margin-top:4px;">Senza chiave: Coach AI non disponibile.</div>
+
+                <div class="profile-grid" style="margin-top:14px;">
+                    <div>
+                        <label>CLIENT_ID (Google Cloud)</label>
+                        <input type="text" id="dCid" placeholder="xxxx.apps.googleusercontent.com" onchange="saveDriveSettings()">
+                    </div>
+                    <div>
+                        <label>API_KEY (Google Cloud, opzionale)</label>
+                        <input type="text" id="dKey" placeholder="AIza…" onchange="saveDriveSettings()">
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                    <button class="btn btn-start" style="padding:8px 14px; font-size:12px;" onclick="driveConnect()">🔗 Collega Drive</button>
+                    <button class="btn btn-reset" style="padding:8px 14px; font-size:12px;" onclick="driveUpload()">☁️ Salva ora</button>
+                    <button class="btn btn-reset" style="padding:8px 14px; font-size:12px;" onclick="driveImport()">⬇️ Importa da Drive</button>
+                </div>
+                <div id="driveStatus" style="font-size:11px; color:var(--text-muted); margin-top:8px;">Non connesso.</div>
+            </div>
+
+            <div class="panel">
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">💪 Storico Fisico</label>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Ogni volta che aggiorni peso/massa grassa nel Profilo e premi "Salva Profilo", viene registrata qui una nuova misurazione datata.</div>
+                <div id="body-history-list"></div>
+            </div>
+
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <label style="font-size:13px; font-weight:700;">🎯 Obiettivi</label>
+                    <button class="btn btn-start" style="padding:5px 10px; font-size:11px; margin-top:0;" onclick="toggleGoalForm()">➕ Nuovo</button>
+                </div>
+                <div id="goal-form" style="display:none; margin-bottom:14px; padding:12px; border:1px solid var(--border-color); border-radius:10px; background:var(--bg-primary);">
+                    <label style="font-size:11px; color:var(--text-muted); display:block; margin-bottom:4px;">Tipo di obiettivo</label>
+                    <select id="goal-type" onchange="updateGoalFormFields()" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-main); margin-bottom:10px;">
+                        <option value="volume">Volume (es. tot km a settimana/mese/anno)</option>
+                        <option value="time_distance">Tempo su distanza (es. 4 km in meno di 30 min)</option>
+                    </select>
+
+                    <div id="goal-fields-volume" class="profile-grid">
+                        <div>
+                            <label>Km obiettivo</label>
+                            <input type="number" id="goal-volume-km" step="0.1" placeholder="es. 20">
+                        </div>
+                        <div>
+                            <label>Periodo</label>
+                            <select id="goal-volume-period" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-main);">
+                                <option value="week">a settimana</option>
+                                <option value="month">al mese</option>
+                                <option value="year">all'anno</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="goal-fields-time" class="profile-grid" style="display:none;">
+                        <div>
+                            <label>Distanza (km)</label>
+                            <input type="number" id="goal-time-km" step="0.1" placeholder="es. 4">
+                        </div>
+                        <div>
+                            <label>Tempo massimo (minuti)</label>
+                            <input type="number" id="goal-time-minutes" step="0.5" placeholder="es. 30">
+                        </div>
+                    </div>
+
+                    <button class="btn btn-start" style="margin-top:10px; padding:8px 16px; font-size:12px;" onclick="saveGoal()">Salva obiettivo</button>
+                </div>
+                <div id="goal-list"><div class="session-meta">Nessun obiettivo impostato.</div></div>
+            </div>
+
+            <div class="panel">
                 <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">📈 Riepilogo</label>
                 <div class="period-tabs" style="margin-bottom:10px; flex-wrap:wrap;">
+                    <button id="period-day" onclick="setSummaryPeriod('day')">Giorno</button>
                     <button id="period-week" class="active" onclick="setSummaryPeriod('week')">Settimana</button>
                     <button id="period-month" onclick="setSummaryPeriod('month')">Mese</button>
                     <button id="period-year" onclick="setSummaryPeriod('year')">Anno</button>
                     <button id="period-all" onclick="setSummaryPeriod('all')">Tutto</button>
+                    <button id="period-custom" onclick="showCustomPeriodPicker()">Personalizzato</button>
                 </div>
+                <div id="custom-period-form" style="display:none; gap:8px; align-items:flex-end; margin-bottom:10px; flex-wrap:wrap;">
+                    <div>
+                        <label style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:3px;">Dal</label>
+                        <input type="date" id="custom-date-start" style="padding:7px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-main); font-size:12px;">
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:3px;">Al</label>
+                        <input type="date" id="custom-date-end" style="padding:7px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-main); font-size:12px;">
+                    </div>
+                    <button class="btn btn-start" style="margin-top:0; padding:8px 16px; font-size:12px;" onclick="applyCustomPeriod()">Applica</button>
+                </div>
+                <div id="bucket-kpi-hint" style="display:none; font-size:11px; color:var(--accent-blue); margin-bottom:8px; cursor:pointer;" onclick="clearBucketSelection()">🔍 Filtro attivo su una colonna del grafico — tocca qui per tornare al periodo intero</div>
                 <div class="summary-grid">
                     <div class="stat-box">
                         <div class="stat-label">Km percorsi</div>
@@ -847,8 +939,19 @@
             </div>
 
             <div class="panel">
-                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">📊 Andamento (km per periodo)</label>
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">📊 Andamento (km per periodo — tocca una colonna per filtrare il Riepilogo)</label>
                 <div id="trend-chart-mount" style="width:100%; overflow-x:auto;"></div>
+            </div>
+
+            <div class="panel">
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">🤖 Coach AI</label>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Analizza obiettivi, storico allenamenti, fisico e umore per generare un piano o un'analisi dei progressi. Ogni analisi resta salvata: la più recente è mostrata per prima.</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px;">
+                    <button class="btn btn-start" style="padding:8px 14px; font-size:12px;" onclick="generateAiPlan()">📋 Genera piano di allenamento</button>
+                    <button class="btn btn-start" style="padding:8px 14px; font-size:12px; background: linear-gradient(135deg, #a855f7, #2563eb);" onclick="generateAiAnalysis()">📈 Analizza i progressi</button>
+                </div>
+                <div id="ai-log-status" style="font-size:11px; color:var(--text-muted); margin-bottom:10px;"></div>
+                <div id="ai-log-list"><div class="session-meta">Nessuna analisi generata ancora.</div></div>
             </div>
 
             <div class="panel">
@@ -885,6 +988,16 @@
                 </div>
 
                 <div id="session-list"><div class="session-meta">Nessuna sessione ancora registrata: completa un allenamento per vederlo qui.</div></div>
+            </div>
+
+            <div class="panel">
+                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">😌 Come ti sei sentito</label>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Un voto al giorno, anche nei giorni senza allenamento — utile al Coach AI per capire se cali di performance dipendono dalla stanchezza o da altro.</div>
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+                    <input type="date" id="wellness-date" onchange="renderWellnessStars()" style="padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-main); font-size:12px;">
+                    <div id="wellness-stars" style="font-size:24px; letter-spacing:2px; cursor:pointer;"></div>
+                </div>
+                <div id="wellness-list"></div>
             </div>
 
         </div>
@@ -1001,7 +1114,11 @@
             loadProgram();
             loadProfileIntoForm();
             updateHeaderName();
+            loadAiKeyIntoForm();
+            loadDriveSettingsIntoForm();
+            renderWellnessStars();
             renderHistoryViews();
+            tryDriveAuto();
         };
 
         // Quando si torna sulla pagina (es. dopo aver cambiato canzone in un'altra
@@ -1096,7 +1213,7 @@
             try {
                 const data = parseTreadmillData(event.target.value);
                 const now = Date.now();
-                if (typeof data.speed === 'number' && !isNaN(data.speed)) {
+                if (typeof data.speed === 'number' && !isNaN(data.speed) && data.speed >= 0 && data.speed <= 30) {
                     processBtLiveSample(data.speed, now);
                 }
             } catch (e) { /* pacchetto non riconosciuto: ignoro senza bloccare l'app */ }
@@ -1588,6 +1705,8 @@
         const PROFILE_KEY = 'bcube_profile';
         const HISTORY_KEY = 'bcube_history';
         let summaryPeriod = 'week';
+        let customStart = null;
+        let customEnd = null;
 
         function loadProfile() {
             try {
@@ -1614,6 +1733,9 @@
                 startDate: document.getElementById('profile-startdate').value || null
             };
             saveProfileData(p);
+            if (p.weightKg) {
+                addBodyHistoryEntry(p.weightKg, p.heightCm, p.bodyFatPct);
+            }
             document.getElementById('profile-status').innerText = "✅ Profilo salvato" + (p.name ? (", ciao " + p.name + "!") : ".") + (p.weightKg ? "" : " (senza peso le calorie saranno una stima generica su 70 kg).");
             updateHeaderName();
             renderHistoryViews();
@@ -1651,14 +1773,21 @@
         // le stesse usate dai tapis roulant professionali — basate su velocità,
         // pendenza e peso corporeo reale. Senza peso impostato uso 70 kg come
         // stima generica (dichiarata nell'interfaccia).
+        // Blindatura: qualunque input assurdo (es. pendenza 1268% arrivata da un
+        // sensore Bluetooth difettoso) viene tagliato PRIMA di entrare nella
+        // formula, e il risultato finale ha comunque un tetto fisiologico
+        // massimo — così un dato sporco non può più generare cifre come
+        // "1970 kcal in 5 minuti" (fisicamente impossibile).
         function kcalPerMinuteFor(speedKmh, inclinePct, weightKg) {
-            const w = weightKg || 70;
-            const speedMmin = speedKmh * 1000 / 60;
-            const grade = inclinePct / 100;
-            const vo2 = speedKmh <= 7
+            const w = Math.min(Math.max(weightKg || 70, 30), 250);
+            const speed = Math.min(Math.max(speedKmh, 0), 25);       // max realistico 25 km/h
+            const grade = Math.min(Math.max(inclinePct, 0), 25) / 100; // max realistico 25%
+            const speedMmin = speed * 1000 / 60;
+            const vo2 = speed <= 7
                 ? 0.1 * speedMmin + 1.8 * speedMmin * grade + 3.5   // equazione ACSM camminata
                 : 0.2 * speedMmin + 0.9 * speedMmin * grade + 3.5;  // equazione ACSM corsa
-            return (vo2 * w) / 1000 * 5; // 1 L di O2 ≈ 5 kcal
+            const kcalMin = (vo2 * w) / 1000 * 5; // 1 L di O2 ≈ 5 kcal
+            return Math.min(kcalMin, 30); // tetto: nessun essere umano supera ~25-28 kcal/min
         }
 
         function computeCaloriesKcal(program, elapsedSec, segDurSec, weightKg) {
@@ -1791,6 +1920,536 @@
             toggleManualEntryForm();
         }
 
+        /* ═══════════════════════════════════════════════════════════════
+           STORICO FISICO: peso/altezza/massa grassa nel tempo, per
+           confrontarli con le performance nelle analisi del Coach AI.
+           ═══════════════════════════════════════════════════════════════ */
+        const BODY_HISTORY_KEY = 'bcube_body_history';
+
+        function loadBodyHistory() {
+            try { return JSON.parse(localStorage.getItem(BODY_HISTORY_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function saveBodyHistoryData(arr) { localStorage.setItem(BODY_HISTORY_KEY, JSON.stringify(arr)); }
+
+        function addBodyHistoryEntry(weightKg, heightCm, bodyFatPct) {
+            const today = new Date().toISOString().slice(0, 10);
+            const history = loadBodyHistory();
+            const existing = history.find(e => e.dateISO.slice(0, 10) === today);
+            if (existing) {
+                existing.weightKg = weightKg; existing.heightCm = heightCm; existing.bodyFatPct = bodyFatPct;
+            } else {
+                history.push({ id: Date.now() + '-b', dateISO: new Date().toISOString(), weightKg, heightCm, bodyFatPct });
+            }
+            saveBodyHistoryData(history);
+        }
+
+        function deleteBodyHistoryEntry(id) {
+            saveBodyHistoryData(loadBodyHistory().filter(e => e.id !== id));
+            renderHistoryViews();
+        }
+
+        function renderBodyHistory() {
+            const mount = document.getElementById('body-history-list');
+            if (!mount) return;
+            const history = loadBodyHistory().slice().sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
+            if (history.length === 0) {
+                mount.innerHTML = '<div class="session-meta">Nessuna misurazione ancora registrata.</div>';
+                return;
+            }
+            mount.innerHTML = history.slice(0, 30).map(e => {
+                const d = new Date(e.dateISO);
+                const dateStr = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const bf = e.bodyFatPct ? ` · MG ${e.bodyFatPct}% / MM ${(100 - e.bodyFatPct).toFixed(1)}%` : '';
+                return `<div class="session-row">
+                    <div><div>${e.weightKg} kg${e.heightCm ? ' · ' + e.heightCm + ' cm' : ''}${bf}</div><div class="session-meta">${dateStr}</div></div>
+                    <button class="session-del" onclick="deleteBodyHistoryEntry('${e.id}')">🗑️</button>
+                </div>`;
+            }).join('');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           OBIETTIVI: volume (km per settimana/mese/anno) o tempo su distanza
+           (es. 4km in meno di 30 min). Aggiornabili nel tempo.
+           ═══════════════════════════════════════════════════════════════ */
+        const GOALS_KEY = 'bcube_goals';
+
+        function loadGoals() {
+            try { return JSON.parse(localStorage.getItem(GOALS_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function saveGoalsData(arr) { localStorage.setItem(GOALS_KEY, JSON.stringify(arr)); }
+
+        function toggleGoalForm() {
+            const form = document.getElementById('goal-form');
+            form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
+            updateGoalFormFields();
+        }
+
+        function updateGoalFormFields() {
+            const type = document.getElementById('goal-type').value;
+            document.getElementById('goal-fields-volume').style.display = type === 'volume' ? 'grid' : 'none';
+            document.getElementById('goal-fields-time').style.display = type === 'time_distance' ? 'grid' : 'none';
+        }
+
+        function saveGoal() {
+            const type = document.getElementById('goal-type').value;
+            const goals = loadGoals();
+            let goal = { id: Date.now() + '-g', type, createdAt: new Date().toISOString(), active: true };
+
+            if (type === 'volume') {
+                const km = parseFloat(document.getElementById('goal-volume-km').value);
+                const period = document.getElementById('goal-volume-period').value;
+                if (!km || km <= 0) { alert('Inserisci un obiettivo di km valido.'); return; }
+                goal.targetKm = km;
+                goal.periodType = period;
+                goal.description = `${km} km ${period === 'week' ? 'a settimana' : period === 'month' ? 'al mese' : "all'anno"}`;
+            } else {
+                const km = parseFloat(document.getElementById('goal-time-km').value);
+                const minutes = parseFloat(document.getElementById('goal-time-minutes').value);
+                if (!km || km <= 0 || !minutes || minutes <= 0) { alert('Inserisci distanza e tempo validi.'); return; }
+                goal.targetDistanceKm = km;
+                goal.targetMinutes = minutes;
+                goal.description = `${km} km in meno di ${minutes} min`;
+            }
+
+            goals.push(goal);
+            saveGoalsData(goals);
+            toggleGoalForm();
+            document.getElementById('goal-volume-km').value = '';
+            document.getElementById('goal-time-km').value = '';
+            document.getElementById('goal-time-minutes').value = '';
+            renderHistoryViews();
+        }
+
+        function deleteGoal(id) {
+            saveGoalsData(loadGoals().filter(g => g.id !== id));
+            renderHistoryViews();
+        }
+
+        // Calcola i progressi di un obiettivo sulla base dello storico allenamenti
+        function computeGoalProgress(goal, history) {
+            if (goal.type === 'volume') {
+                const km = history.filter(e => isInPeriod(e.dateISO, goal.periodType))
+                    .reduce((s, e) => s + e.km, 0);
+                return { current: km, target: goal.targetKm, pct: Math.min(100, (km / goal.targetKm) * 100) };
+            } else {
+                const requiredSpeed = goal.targetDistanceKm / (goal.targetMinutes / 60);
+                const attempts = history.filter(e => e.km >= goal.targetDistanceKm * 0.95);
+                const best = attempts.reduce((b, e) => (!b || e.avgSpeed > b.avgSpeed) ? e : b, null);
+                const achieved = best && best.avgSpeed >= requiredSpeed;
+                return { achieved: !!achieved, best: best, requiredSpeed };
+            }
+        }
+
+        function renderGoalList() {
+            const mount = document.getElementById('goal-list');
+            const goals = loadGoals();
+            if (goals.length === 0) {
+                mount.innerHTML = '<div class="session-meta">Nessun obiettivo impostato.</div>';
+                return;
+            }
+            const history = loadHistory();
+            mount.innerHTML = goals.slice().reverse().map(g => {
+                const p = computeGoalProgress(g, history);
+                let body;
+                if (g.type === 'volume') {
+                    body = `<div class="session-meta">${p.current.toFixed(1)} / ${p.target} km — ${Math.round(p.pct)}%</div>
+                        <div style="background:var(--border-color); border-radius:6px; height:6px; margin-top:4px; overflow:hidden;">
+                            <div style="background:var(--accent-blue); height:100%; width:${p.pct}%;"></div>
+                        </div>`;
+                } else {
+                    body = p.achieved
+                        ? `<div class="session-meta">✅ Raggiunto! Miglior tentativo: ${p.best.km.toFixed(2)} km a ${p.best.avgSpeed.toFixed(1)} km/h</div>`
+                        : `<div class="session-meta">${p.best ? `Miglior tentativo: ${p.best.avgSpeed.toFixed(1)} km/h (serve ${p.requiredSpeed.toFixed(1)} km/h)` : 'Ancora nessun tentativo su questa distanza'}</div>`;
+                }
+                return `<div class="session-row" style="align-items:flex-start;">
+                    <div style="flex:1;">
+                        <div>🎯 ${g.description}</div>
+                        ${body}
+                    </div>
+                    <button class="session-del" onclick="deleteGoal('${g.id}')">🗑️</button>
+                </div>`;
+            }).join('');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           BENESSERE: voto 1-5 stelle al giorno (anche senza allenamento)
+           ═══════════════════════════════════════════════════════════════ */
+        const WELLNESS_KEY = 'bcube_wellness';
+        let wellnessSelectedRating = 0;
+
+        function loadWellness() {
+            try { return JSON.parse(localStorage.getItem(WELLNESS_KEY)) || {}; }
+            catch (e) { return {}; }
+        }
+        function saveWellnessData(obj) { localStorage.setItem(WELLNESS_KEY, JSON.stringify(obj)); }
+
+        function renderWellnessStars() {
+            const dateInput = document.getElementById('wellness-date');
+            if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
+            const wellness = loadWellness();
+            const entry = wellness[dateInput.value];
+            wellnessSelectedRating = entry ? entry.rating : 0;
+            drawStars();
+        }
+
+        function drawStars() {
+            const el = document.getElementById('wellness-stars');
+            el.innerHTML = [1, 2, 3, 4, 5].map(n =>
+                `<span onclick="setWellnessRating(${n})" style="color:${n <= wellnessSelectedRating ? 'var(--accent-orange)' : 'var(--border-color)'};">★</span>`
+            ).join('');
+        }
+
+        function setWellnessRating(n) {
+            wellnessSelectedRating = n;
+            drawStars();
+            const dateVal = document.getElementById('wellness-date').value;
+            const wellness = loadWellness();
+            wellness[dateVal] = { rating: n };
+            saveWellnessData(wellness);
+            renderWellnessList();
+        }
+
+        function deleteWellnessEntry(dateKey) {
+            const wellness = loadWellness();
+            delete wellness[dateKey];
+            saveWellnessData(wellness);
+            renderWellnessList();
+            renderWellnessStars();
+        }
+
+        function renderWellnessList() {
+            const mount = document.getElementById('wellness-list');
+            const wellness = loadWellness();
+            const keys = Object.keys(wellness).sort().reverse().slice(0, 14);
+            if (keys.length === 0) {
+                mount.innerHTML = '<div class="session-meta">Nessun voto ancora registrato.</div>';
+                return;
+            }
+            mount.innerHTML = keys.map(k => {
+                const stars = '★'.repeat(wellness[k].rating) + '☆'.repeat(5 - wellness[k].rating);
+                const d = new Date(k + 'T12:00:00');
+                const dateStr = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                return `<div class="session-row">
+                    <div>${dateStr} — <span style="color:var(--accent-orange);">${stars}</span></div>
+                    <button class="session-del" onclick="deleteWellnessEntry('${k}')">🗑️</button>
+                </div>`;
+            }).join('');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           COACH AI (Gemini): piano di allenamento iniziale + analisi
+           periodiche dei progressi. Ogni generazione resta salvata in uno
+           storico (la più recente per prima).
+           ═══════════════════════════════════════════════════════════════ */
+        const AI_KEY_STORAGE = 'bcube_ai_key';
+        const AI_LOG_KEY = 'bcube_ai_log';
+
+        function saveAiKey() {
+            const key = document.getElementById('ai-key').value.trim();
+            if (key) {
+                localStorage.setItem(AI_KEY_STORAGE, key);
+                document.getElementById('ai-key-status').innerText = '✅ Chiave salvata: Coach AI attivo.';
+            }
+        }
+        function loadAiKeyIntoForm() {
+            const key = localStorage.getItem(AI_KEY_STORAGE) || '';
+            document.getElementById('ai-key').value = key;
+            document.getElementById('ai-key-status').innerText = key ? '✅ Chiave salvata: Coach AI attivo.' : 'Senza chiave: Coach AI non disponibile.';
+        }
+        function getAiKey() { return localStorage.getItem(AI_KEY_STORAGE) || ''; }
+
+        function loadAiLog() {
+            try { return JSON.parse(localStorage.getItem(AI_LOG_KEY)) || []; }
+            catch (e) { return []; }
+        }
+        function saveAiLogData(arr) { localStorage.setItem(AI_LOG_KEY, JSON.stringify(arr)); }
+
+        // Chiamata Gemini semplice con gestione errori chiara (chiave assente,
+        // quota esaurita, errore di rete).
+        async function geminiCallSimple(prompt) {
+            const key = getAiKey();
+            if (!key) throw new Error('Nessuna chiave Gemini impostata (vedi Connessioni).');
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+            });
+            if (res.status === 429) throw new Error('Quota Gemini esaurita per ora, riprova più tardi.');
+            if (res.status === 400) throw new Error('Chiave Gemini non valida.');
+            if (!res.ok) throw new Error('Errore HTTP ' + res.status);
+            const data = await res.json();
+            if (data.promptFeedback && data.promptFeedback.blockReason) throw new Error('Risposta bloccata dai filtri di sicurezza.');
+            const text = (data.candidates && data.candidates[0] && data.candidates[0].content.parts.map(p => p.text || '').join('')) || '';
+            if (!text) throw new Error('Risposta vuota da Gemini.');
+            return text;
+        }
+
+        // Riassume tutti i dati disponibili in un testo compatto da passare
+        // all'AI: obiettivi, ultime sessioni, fisico, umore.
+        function buildAiContextSummary() {
+            const profile = loadProfile();
+            const goals = loadGoals();
+            const history = loadHistory().slice().sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
+            const recent = history.slice(0, 20);
+            const body = loadBodyHistory().slice().sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO)).slice(0, 10);
+            const wellness = loadWellness();
+
+            const goalsTxt = goals.length
+                ? goals.map(g => '- ' + g.description).join('\n')
+                : '(nessun obiettivo impostato)';
+
+            const sessionsTxt = recent.length
+                ? recent.map(e => {
+                    const day = e.dateISO.slice(0, 10);
+                    const w = wellness[day] ? `, umore quel giorno: ${wellness[day].rating}/5★` : '';
+                    return `- ${day}: ${e.program}, ${formatHoursMinutes(e.durationSec)}, ${e.km.toFixed(2)} km, ${e.avgSpeed.toFixed(1)} km/h, ${Math.round(e.kcal)} kcal${w}`;
+                }).join('\n')
+                : '(nessuna sessione registrata ancora)';
+
+            const bodyTxt = body.length
+                ? body.map(b => `- ${b.dateISO.slice(0, 10)}: ${b.weightKg} kg${b.bodyFatPct ? `, massa grassa ${b.bodyFatPct}%` : ''}`).join('\n')
+                : '(nessuna misurazione fisica registrata)';
+
+            return `PROFILO: ${profile.name || 'utente'}, peso ${profile.weightKg || 'non impostato'} kg, altezza ${profile.heightCm || 'non impostata'} cm.
+
+OBIETTIVI:
+${goalsTxt}
+
+ULTIME SESSIONI (dalla più recente):
+${sessionsTxt}
+
+STORICO FISICO RECENTE:
+${bodyTxt}`;
+        }
+
+        async function generateAiPlan() {
+            const statusEl = document.getElementById('ai-log-status');
+            if (!getAiKey()) { statusEl.innerText = '⚠️ Inserisci prima la chiave Gemini in Connessioni.'; return; }
+            statusEl.innerText = '⏳ Genero il piano di allenamento...';
+            try {
+                const context = buildAiContextSummary();
+                const prompt = `Sei un personal trainer esperto di corsa e camminata su tapis roulant. Analizza questi dati e proponi un PIANO DI ALLENAMENTO INIZIALE realistico per raggiungere gli obiettivi indicati, tenendo conto della forma fisica attuale, della frequenza di allenamento recente e dell'umore/energia riportati (bassa energia frequente = piano più prudente).
+
+${context}
+
+Rispondi in italiano, in formato leggibile con paragrafi brevi e/o elenchi puntati: 1) valutazione sintetica dello stato attuale, 2) piano settimanale proposto (giorni, durata, intensità indicativa), 3) 2-3 consigli pratici.`;
+                const text = await geminiCallSimple(prompt);
+                const log = loadAiLog();
+                log.push({ id: Date.now() + '-ai', dateISO: new Date().toISOString(), type: 'plan', content: text });
+                saveAiLogData(log);
+                statusEl.innerText = '✅ Piano generato.';
+                renderAiLog();
+            } catch (e) {
+                statusEl.innerText = '⚠️ ' + e.message;
+            }
+        }
+
+        async function generateAiAnalysis() {
+            const statusEl = document.getElementById('ai-log-status');
+            if (!getAiKey()) { statusEl.innerText = '⚠️ Inserisci prima la chiave Gemini in Connessioni.'; return; }
+            statusEl.innerText = '⏳ Analizzo i progressi...';
+            try {
+                const context = buildAiContextSummary();
+                const prevPlan = loadAiLog().slice().reverse().find(l => l.type === 'plan');
+                const prompt = `Sei un personal trainer. Analizza i progressi dell'utente verso i suoi obiettivi, usando questi dati (comprese le sessioni recenti, il fisico e l'umore/energia riportato — bassa energia può spiegare performance più basse anche con buona costanza).
+
+${context}
+
+${prevPlan ? 'PIANO PRECEDENTEMENTE SUGGERITO:\n' + prevPlan.content + '\n\n' : ''}
+Rispondi in italiano con: 1) parametri chiave (quantità di allenamenti nel periodo, qualità/intensità media, andamento della velocità media, coerenza con gli obiettivi), 2) valutazione se il fisico sta seguendo l'andamento atteso rispetto alle performance, 3) suggerimenti concreti per avvicinarsi agli obiettivi, aggiornando il piano se necessario.`;
+                const text = await geminiCallSimple(prompt);
+                const log = loadAiLog();
+                log.push({ id: Date.now() + '-ai', dateISO: new Date().toISOString(), type: 'analysis', content: text });
+                saveAiLogData(log);
+                statusEl.innerText = '✅ Analisi generata.';
+                renderAiLog();
+            } catch (e) {
+                statusEl.innerText = '⚠️ ' + e.message;
+            }
+        }
+
+        function deleteAiLogEntry(id) {
+            saveAiLogData(loadAiLog().filter(l => l.id !== id));
+            renderAiLog();
+        }
+
+        function renderAiLog() {
+            const mount = document.getElementById('ai-log-list');
+            const log = loadAiLog().slice().sort((a, b) => new Date(b.dateISO) - new Date(a.dateISO));
+            if (log.length === 0) {
+                mount.innerHTML = '<div class="session-meta">Nessuna analisi generata ancora.</div>';
+                return;
+            }
+            mount.innerHTML = log.map(l => {
+                const d = new Date(l.dateISO);
+                const dateStr = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                const badge = l.type === 'plan' ? '📋 Piano' : '📈 Analisi';
+                const esc = (l.content || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                return `<div style="border:1px solid var(--border-color); border-radius:10px; padding:10px; margin-bottom:10px; background:var(--bg-primary);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:11px; font-weight:700; color:var(--accent-blue);">${badge} · ${dateStr}</span>
+                        <button class="session-del" onclick="deleteAiLogEntry('${l.id}')">🗑️</button>
+                    </div>
+                    <div style="font-size:12px; white-space:pre-wrap; line-height:1.5;">${esc}</div>
+                </div>`;
+            }).join('');
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           GOOGLE DRIVE SYNC (GSI + Drive REST, scope drive.appdata) —
+           stesso pattern usato nel Diario Dieta & Sport.
+           ═══════════════════════════════════════════════════════════════ */
+        const DRIVE_SETTINGS_KEY = 'bcube_drive';
+        let DTOKEN = null, tokenClient = null;
+
+        function loadDriveSettings() {
+            try { return JSON.parse(localStorage.getItem(DRIVE_SETTINGS_KEY)) || {}; }
+            catch (e) { return {}; }
+        }
+        function saveDriveSettings() {
+            const s = {
+                cid: document.getElementById('dCid').value.trim(),
+                akey: document.getElementById('dKey').value.trim(),
+                on: loadDriveSettings().on || false
+            };
+            localStorage.setItem(DRIVE_SETTINGS_KEY, JSON.stringify(s));
+        }
+        function loadDriveSettingsIntoForm() {
+            const s = loadDriveSettings();
+            document.getElementById('dCid').value = s.cid || '';
+            document.getElementById('dKey').value = s.akey || '';
+        }
+
+        function collectAllData() {
+            return {
+                profile: loadProfile(),
+                history: loadHistory(),
+                bodyHistory: loadBodyHistory(),
+                goals: loadGoals(),
+                wellness: loadWellness(),
+                aiLog: loadAiLog(),
+                updated: new Date().toISOString()
+            };
+        }
+        function applyAllData(d) {
+            if (d.profile) saveProfileData(d.profile);
+            if (d.history) saveHistoryData(d.history);
+            if (d.bodyHistory) saveBodyHistoryData(d.bodyHistory);
+            if (d.goals) saveGoalsData(d.goals);
+            if (d.wellness) saveWellnessData(d.wellness);
+            if (d.aiLog) saveAiLogData(d.aiLog);
+        }
+
+        function loadGSI(cb) {
+            if (window.google && google.accounts) return cb();
+            const s = document.createElement('script');
+            s.src = 'https://accounts.google.com/gsi/client';
+            s.onload = cb;
+            s.onerror = () => alert('Impossibile caricare Google Identity (offline?).');
+            document.head.appendChild(s);
+        }
+
+        window.driveConnect = () => {
+            saveDriveSettings();
+            const s = loadDriveSettings();
+            if (!s.cid) return alert('Inserisci il CLIENT_ID.');
+            if (window.location.protocol === 'file:') return alert("L'OAuth Google non funziona da file:// — pubblica l'app su https (es. GitHub Pages) e registra l'origine nel progetto Google Cloud.");
+            loadGSI(() => {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: s.cid,
+                    scope: 'https://www.googleapis.com/auth/drive.appdata',
+                    callback: async t => {
+                        DTOKEN = t.access_token;
+                        const settings = loadDriveSettings(); settings.on = true;
+                        localStorage.setItem(DRIVE_SETTINGS_KEY, JSON.stringify(settings));
+                        document.getElementById('driveStatus').innerText = '✅ Connesso. Sincronizzo...';
+                        await driveSyncOnStart();
+                    }
+                });
+                tokenClient.requestAccessToken();
+            });
+        };
+
+        async function driveFind() {
+            const r = await fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%27bcube_backup.json%27&fields=files(id,modifiedTime)",
+                { headers: { Authorization: 'Bearer ' + DTOKEN } });
+            const j = await r.json();
+            return (j.files && j.files[0]) || null;
+        }
+
+        window.driveUpload = async () => {
+            if (!DTOKEN) return alert('Connettiti prima a Drive.');
+            try {
+                const f = await driveFind();
+                const meta = { name: 'bcube_backup.json', parents: f ? undefined : ['appDataFolder'] };
+                const boundary = '-------bcube';
+                const body = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(meta) +
+                    '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + JSON.stringify(collectAllData()) + '\r\n--' + boundary + '--';
+                const url = 'https://www.googleapis.com/upload/drive/v3/files' + (f ? '/' + f.id : '') + '?uploadType=multipart';
+                await fetch(url, {
+                    method: f ? 'PATCH' : 'POST',
+                    headers: { Authorization: 'Bearer ' + DTOKEN, 'Content-Type': 'multipart/related; boundary=' + boundary },
+                    body
+                });
+                document.getElementById('driveStatus').innerText = '✅ Salvato su Drive alle ' + new Date().toLocaleTimeString('it-IT');
+            } catch (e) { alert('Errore Drive: ' + e.message); }
+        };
+
+        window.driveImport = async () => {
+            if (!DTOKEN) return alert('Connettiti prima a Drive.');
+            try {
+                const f = await driveFind();
+                if (!f) return alert('Nessun backup trovato su Drive.');
+                if (!confirm('Importo il backup da Drive del ' + new Date(f.modifiedTime).toLocaleString('it-IT') + '? Sovrascrive i dati locali.')) return;
+                const r = await fetch('https://www.googleapis.com/drive/v3/files/' + f.id + '?alt=media', { headers: { Authorization: 'Bearer ' + DTOKEN } });
+                applyAllData(await r.json());
+                location.reload();
+            } catch (e) { alert('Errore importazione: ' + e.message); }
+        };
+
+        function tryDriveAuto() {
+            const s = loadDriveSettings();
+            if (!(s.on && s.cid) || window.location.protocol === 'file:') return;
+            loadGSI(() => {
+                try {
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: s.cid,
+                        scope: 'https://www.googleapis.com/auth/drive.appdata',
+                        callback: async t => {
+                            if (t && t.access_token) {
+                                DTOKEN = t.access_token;
+                                await driveSyncOnStart();
+                                const st = document.getElementById('driveStatus'); if (st) st.innerText = '✅ Sincronizzato con Drive.';
+                            }
+                        },
+                        error_callback: () => {}
+                    });
+                    tokenClient.requestAccessToken({ prompt: '' });
+                } catch (e) {}
+            });
+        }
+
+        async function driveSyncOnStart() {
+            try {
+                const f = await driveFind();
+                if (!f) return driveUpload();
+                const local = collectAllData();
+                if (new Date(f.modifiedTime) > new Date(local.updated || 0)) {
+                    const r = await fetch('https://www.googleapis.com/drive/v3/files/' + f.id + '?alt=media', { headers: { Authorization: 'Bearer ' + DTOKEN } });
+                    const remote = await r.json();
+                    if (confirm('Su Drive c\'è una versione più recente (' + new Date(f.modifiedTime).toLocaleString('it-IT') + '). Caricarla?')) {
+                        applyAllData(remote);
+                        location.reload();
+                    }
+                } else {
+                    driveUpload();
+                }
+            } catch (e) { /* silenzioso */ }
+        }
+
+
         function switchView(view) {
             document.getElementById('view-workout').classList.toggle('active', view === 'workout');
             document.getElementById('view-history').classList.toggle('active', view === 'history');
@@ -1799,12 +2458,41 @@
             if (view === 'history') renderHistoryViews();
         }
 
+        let selectedBucket = null; // se impostato (click su una colonna), filtra il Riepilogo su quel periodo
+
         function setSummaryPeriod(p) {
             summaryPeriod = p;
-            ['week', 'month', 'year', 'all'].forEach(k => {
+            selectedBucket = null;
+            ['day', 'week', 'month', 'year', 'all', 'custom'].forEach(k => {
                 const el = document.getElementById('period-' + k);
                 if (el) el.classList.toggle('active', k === p);
             });
+            document.getElementById('custom-period-form').style.display = 'none';
+            renderHistoryViews();
+        }
+
+        function showCustomPeriodPicker() {
+            ['day', 'week', 'month', 'year', 'all'].forEach(k => document.getElementById('period-' + k).classList.remove('active'));
+            document.getElementById('period-custom').classList.add('active');
+            document.getElementById('custom-period-form').style.display = 'flex';
+        }
+
+        function applyCustomPeriod() {
+            const s = document.getElementById('custom-date-start').value;
+            const e = document.getElementById('custom-date-end').value;
+            if (!s || !e) { alert('Seleziona sia la data iniziale che quella finale.'); return; }
+            const start = new Date(s + 'T00:00:00');
+            const end = new Date(e + 'T23:59:59.999');
+            if (end < start) { alert('La data finale deve essere dopo quella iniziale.'); return; }
+            customStart = start;
+            customEnd = end;
+            summaryPeriod = 'custom';
+            selectedBucket = null;
+            renderHistoryViews();
+        }
+
+        function clearBucketSelection() {
+            selectedBucket = null;
             renderHistoryViews();
         }
 
@@ -1812,8 +2500,12 @@
             const d = new Date(dateISO);
             const now = new Date();
             if (period === 'all') return true;
+            if (period === 'custom') return customStart && customEnd && d >= customStart && d <= customEnd;
             if (period === 'year') return d.getFullYear() === now.getFullYear();
             if (period === 'month') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+            if (period === 'day') {
+                return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+            }
             if (period === 'week') {
                 const start = getWeekStart(now);
                 const end = new Date(start); end.setDate(start.getDate() + 7);
@@ -1837,7 +2529,9 @@
 
         function renderSummary() {
             const history = loadHistory();
-            const filtered = history.filter(e => isInPeriod(e.dateISO, summaryPeriod));
+            const filtered = selectedBucket
+                ? history.filter(e => { const d = new Date(e.dateISO); return d >= selectedBucket.start && d < selectedBucket.end; })
+                : history.filter(e => isInPeriod(e.dateISO, summaryPeriod));
             const totalKm = filtered.reduce((s, e) => s + e.km, 0);
             const totalSec = filtered.reduce((s, e) => s + e.durationSec, 0);
             const totalKcal = filtered.reduce((s, e) => s + e.kcal, 0);
@@ -1847,6 +2541,8 @@
             document.getElementById('sum-time').innerText = formatHoursMinutes(totalSec);
             document.getElementById('sum-kcal').innerText = Math.round(totalKcal);
             document.getElementById('sum-speed').innerText = avgSpeed.toFixed(1) + ' km/h';
+
+            document.getElementById('bucket-kpi-hint').style.display = selectedBucket ? 'block' : 'none';
         }
 
         // Data di inizio allenamenti/possesso del tapis: usata per non mostrare
@@ -1861,7 +2557,15 @@
             const ownershipStart = getOwnershipStart();
             let buckets = [];
 
-            if (period === 'week') {
+            if (period === 'day') {
+                // oggi diviso in blocchi da 4 ore
+                const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                for (let h = 0; h < 24; h += 4) {
+                    const start = new Date(dayStart); start.setHours(h);
+                    const end = new Date(dayStart); end.setHours(h + 4);
+                    buckets.push({ start, end, label: String(h).padStart(2, '0') + ':00', km: 0 });
+                }
+            } else if (period === 'week') {
                 for (let i = 7; i >= 0; i--) {
                     const start = getWeekStart(now);
                     start.setDate(start.getDate() - i * 7);
@@ -1881,6 +2585,8 @@
                     : now;
                 const start = ownershipStart || earliest;
                 buckets.push({ start, end: new Date(now.getTime() + 1), label: 'Tutto', km: 0 });
+            } else if (period === 'custom' && customStart && customEnd) {
+                buckets = buildAutoGranularityBuckets(customStart, customEnd);
             } else { // 'month' -> ultimi 6 mesi
                 for (let i = 5; i >= 0; i--) {
                     const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -1890,7 +2596,7 @@
             }
 
             // Non mostrare periodi precedenti alla data di inizio, se impostata
-            if (ownershipStart && period !== 'all') {
+            if (ownershipStart && period !== 'all' && period !== 'day') {
                 buckets = buckets.filter(b => b.end > ownershipStart);
             }
 
@@ -1903,6 +2609,39 @@
             return buckets;
         }
 
+        // Per il periodo "Personalizzato": sceglie da sola la granularità del
+        // grafico in base a quanto è lungo l'intervallo scelto — giorni se è
+        // breve, settimane se è di qualche mese, mesi se è più lungo di un anno.
+        function buildAutoGranularityBuckets(start, end) {
+            const spanDays = (end - start) / (1000 * 3600 * 24);
+            const buckets = [];
+            if (spanDays <= 31) {
+                let cur = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                while (cur < end) {
+                    const next = new Date(cur); next.setDate(cur.getDate() + 1);
+                    buckets.push({ start: new Date(cur), end: next, label: cur.getDate() + '/' + (cur.getMonth() + 1), km: 0 });
+                    cur = next;
+                }
+            } else if (spanDays <= 366) {
+                let cur = getWeekStart(start);
+                while (cur < end) {
+                    const next = new Date(cur); next.setDate(cur.getDate() + 7);
+                    buckets.push({ start: new Date(cur), end: next, label: cur.getDate() + '/' + (cur.getMonth() + 1), km: 0 });
+                    cur = next;
+                }
+            } else {
+                let cur = new Date(start.getFullYear(), start.getMonth(), 1);
+                while (cur < end) {
+                    const next = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+                    buckets.push({ start: new Date(cur), end: next, label: cur.toLocaleDateString('it-IT', { month: 'short', year: '2-digit' }), km: 0 });
+                    cur = next;
+                }
+            }
+            return buckets;
+        }
+
+        let lastRenderedBuckets = [];
+
         function renderTrendChart() {
             const history = loadHistory();
             const mount = document.getElementById('trend-chart-mount');
@@ -1911,6 +2650,7 @@
                 return;
             }
             const buckets = buildBuckets(history, summaryPeriod);
+            lastRenderedBuckets = buckets;
             const maxKm = Math.max(1, ...buckets.map(b => b.km));
             const single = buckets.length === 1;
             const barW = single ? 90 : 28;
@@ -1921,11 +2661,27 @@
                 const barH = Math.max(2, (b.km / maxKm) * 90);
                 const x = single ? (w - barW) / 2 : i * gap + 10;
                 const y = 110 - barH;
-                bars += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="var(--accent-blue)"/>`;
-                bars += `<text x="${x + barW / 2}" y="125" font-size="9" fill="var(--text-muted)" text-anchor="middle">${b.label}</text>`;
-                bars += `<text x="${x + barW / 2}" y="${y - 4}" font-size="9" fill="var(--text-main)" text-anchor="middle">${b.km.toFixed(1)}</text>`;
+                const isSel = selectedBucket && selectedBucket.start.getTime() === b.start.getTime();
+                const fill = isSel ? 'var(--accent-orange)' : 'var(--accent-blue)';
+                bars += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="4" fill="${fill}" style="cursor:pointer;" onclick="selectBucket(${i})"/>`;
+                bars += `<text x="${x + barW / 2}" y="125" font-size="9" fill="var(--text-muted)" text-anchor="middle" style="pointer-events:none;">${b.label}</text>`;
+                bars += `<text x="${x + barW / 2}" y="${y - 4}" font-size="9" fill="var(--text-main)" text-anchor="middle" style="pointer-events:none;">${b.km.toFixed(1)}</text>`;
             });
             mount.innerHTML = `<svg viewBox="0 0 ${w} 140" width="${w}" height="140" style="min-width:${w}px;">${bars}</svg>`;
+        }
+
+        // Click su una colonna del grafico: filtra i KPI del Riepilogo su quel
+        // singolo periodo (es. quella settimana), invece che sull'intero intervallo.
+        function selectBucket(i) {
+            const b = lastRenderedBuckets[i];
+            if (!b) return;
+            if (selectedBucket && selectedBucket.start.getTime() === b.start.getTime()) {
+                selectedBucket = null; // ri-tocco la stessa colonna: deseleziona
+            } else {
+                selectedBucket = b;
+            }
+            renderSummary();
+            renderTrendChart();
         }
 
         function renderSessionList() {
@@ -1972,6 +2728,10 @@
             renderTrendChart();
             renderSessionList();
             renderMiniSessionList();
+            renderBodyHistory();
+            renderGoalList();
+            renderWellnessList();
+            renderAiLog();
         }
 
         function handleResetButtonClick() {
@@ -2098,6 +2858,23 @@
             const secs = seconds % 60;
             return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
+
+        /* ══ PWA: manifest generato a runtime (URL assoluti) + service worker ══ */
+        (function(){
+            try{
+                const ICON192="data:image/png;base64,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";
+                const ICON512="data:image/png;base64,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";
+                const man={name:"Bcube Dashboard",short_name:"Bcube",display:"standalone",
+                    start_url:location.href.split("#")[0],scope:location.href.replace(/[^/]*$/,""),
+                    background_color:"#0f172a",theme_color:"#1e3a8a",
+                    icons:[{src:ICON192,sizes:"192x192",type:"image/png"},{src:ICON512,sizes:"512x512",type:"image/png"}]};
+                const l=document.createElement("link");l.rel="manifest";
+                l.href="data:application/manifest+json,"+encodeURIComponent(JSON.stringify(man));
+                document.head.appendChild(l);
+                if("serviceWorker" in navigator && location.protocol!=="file:")
+                    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+            }catch(e){}
+        })();
     </script>
 </body>
 </html>
