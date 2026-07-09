@@ -2051,7 +2051,7 @@
                 return raw ? JSON.parse(raw) : { name: '', weightKg: null, heightCm: null, bodyFatPct: null };
             } catch (e) { return { name: '', weightKg: null, heightCm: null, bodyFatPct: null }; }
         }
-        function saveProfileData(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); }
+        function saveProfileData(p) { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); touchContent(); }
 
         function loadHistory() {
             try {
@@ -2059,7 +2059,7 @@
                 return raw ? JSON.parse(raw) : [];
             } catch (e) { return []; }
         }
-        function saveHistoryData(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
+        function saveHistoryData(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); touchContent(); }
 
         function saveProfile() {
             const p = {
@@ -2290,7 +2290,7 @@
             try { return JSON.parse(localStorage.getItem(BODY_HISTORY_KEY)) || []; }
             catch (e) { return []; }
         }
-        function saveBodyHistoryData(arr) { localStorage.setItem(BODY_HISTORY_KEY, JSON.stringify(arr)); }
+        function saveBodyHistoryData(arr) { localStorage.setItem(BODY_HISTORY_KEY, JSON.stringify(arr)); touchContent(); }
 
         function addBodyHistoryEntry(weightKg, heightCm, bodyFatPct) {
             const today = new Date().toISOString().slice(0, 10);
@@ -2338,7 +2338,7 @@
             try { return JSON.parse(localStorage.getItem(GOALS_KEY)) || []; }
             catch (e) { return []; }
         }
-        function saveGoalsData(arr) { localStorage.setItem(GOALS_KEY, JSON.stringify(arr)); }
+        function saveGoalsData(arr) { localStorage.setItem(GOALS_KEY, JSON.stringify(arr)); touchContent(); }
 
         function toggleGoalForm() {
             const form = document.getElementById('goal-form');
@@ -2460,7 +2460,7 @@
             try { return JSON.parse(localStorage.getItem(WELLNESS_KEY)) || {}; }
             catch (e) { return {}; }
         }
-        function saveWellnessData(obj) { localStorage.setItem(WELLNESS_KEY, JSON.stringify(obj)); }
+        function saveWellnessData(obj) { localStorage.setItem(WELLNESS_KEY, JSON.stringify(obj)); touchContent(); }
 
         function renderWellnessStars() {
             const dateInput = document.getElementById('wellness-date');
@@ -2583,7 +2583,7 @@
             try { return JSON.parse(localStorage.getItem(AI_LOG_KEY)) || []; }
             catch (e) { return []; }
         }
-        function saveAiLogData(arr) { localStorage.setItem(AI_LOG_KEY, JSON.stringify(arr)); }
+        function saveAiLogData(arr) { localStorage.setItem(AI_LOG_KEY, JSON.stringify(arr)); touchContent(); }
 
         const geminiWait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -2666,7 +2666,7 @@
             try { return JSON.parse(localStorage.getItem(INJURIES_KEY)) || []; }
             catch (e) { return []; }
         }
-        function saveInjuriesData(arr) { localStorage.setItem(INJURIES_KEY, JSON.stringify(arr)); }
+        function saveInjuriesData(arr) { localStorage.setItem(INJURIES_KEY, JSON.stringify(arr)); touchContent(); }
 
         function toggleInjuryForm() {
             const form = document.getElementById('injury-form');
@@ -2995,6 +2995,23 @@ REGOLE:
             document.getElementById('dCid').value = s.cid || '';
         }
 
+        /* Timestamp di CONTENUTO persistito: si aggiorna solo quando i dati
+           cambiano davvero (vedi wrapper touchContent() sui save*Data più sotto),
+           mai a ogni apertura dell'app. Serve per confrontare in modo affidabile
+           "chi ha i dati più recenti" tra più dispositivi collegati alla stessa
+           cartella Drive. Non usare Date.now() qui: cambierebbe a ogni lettura. */
+        const TOUCH_KEY = 'bcube_content_updated';
+        function touchContent() { try { localStorage.setItem(TOUCH_KEY, new Date().toISOString()); } catch (e) {} }
+        function getContentUpdated() { try { return localStorage.getItem(TOUCH_KEY) || ''; } catch (e) { return ''; } }
+        // Questo dispositivo ha già completato una sincronizzazione con Drive?
+        // Serve a distinguere il PRIMO collegamento di un nuovo dispositivo
+        // (dove non bisogna mai spingere dati "vuoti" sopra un backup reale)
+        // dalle sincronizzazioni successive (dove basta confrontare i timestamp).
+        const SYNCED_ONCE_KEY = 'bcube_synced_once';
+        function hasRealLocalContent() {
+            return loadHistory().length > 0 || loadGoals().length > 0 || loadBodyHistory().length > 0;
+        }
+
         function collectAllData() {
             return {
                 profile: loadProfile(),
@@ -3004,7 +3021,7 @@ REGOLE:
                 wellness: loadWellness(),
                 aiLog: loadAiLog(),
                 injuries: loadInjuries(),
-                updated: new Date().toISOString()
+                updated: getContentUpdated() || new Date().toISOString()
             };
         }
         function applyAllData(d) {
@@ -3015,6 +3032,10 @@ REGOLE:
             if (d.wellness) saveWellnessData(d.wellness);
             if (d.aiLog) saveAiLogData(d.aiLog);
             if (d.injuries) saveInjuriesData(d.injuries);
+            // Il timestamp di contenuto locale deve riflettere quello dei dati
+            // appena importati (non il momento dell'import): va impostato PER
+            // ULTIMO, perché ogni save*Data sopra lo ha già "toccato" a "ora".
+            try { localStorage.setItem(TOUCH_KEY, d.updated || new Date().toISOString()); } catch (e) {}
         }
 
         function loadGSI(cb) {
@@ -3070,6 +3091,7 @@ REGOLE:
                     body
                 });
                 document.getElementById('driveStatus').innerText = '✅ Salvato su Drive alle ' + new Date().toLocaleTimeString('it-IT');
+                try { localStorage.setItem(SYNCED_ONCE_KEY, '1'); } catch (e2) {}
             } catch (e) { alert('Errore Drive: ' + e.message); }
         };
 
@@ -3081,6 +3103,7 @@ REGOLE:
                 if (!confirm('Importo il backup da Drive del ' + new Date(f.modifiedTime).toLocaleString('it-IT') + '? Sovrascrive i dati locali.')) return;
                 const r = await fetch('https://www.googleapis.com/drive/v3/files/' + f.id + '?alt=media', { headers: { Authorization: 'Bearer ' + DTOKEN } });
                 applyAllData(await r.json());
+                try { localStorage.setItem(SYNCED_ONCE_KEY, '1'); } catch (e2) {}
                 location.reload();
             } catch (e) { alert('Errore importazione: ' + e.message); }
         };
@@ -3102,18 +3125,45 @@ REGOLE:
         async function driveSyncOnStart() {
             try {
                 const f = await driveFind();
-                if (!f) return driveUpload();
-                const local = collectAllData();
-                if (new Date(f.modifiedTime) > new Date(local.updated || 0)) {
-                    const r = await fetch('https://www.googleapis.com/drive/v3/files/' + f.id + '?alt=media', { headers: { Authorization: 'Bearer ' + DTOKEN } });
-                    const remote = await r.json();
-                    if (confirm('Su Drive c\'è una versione più recente (' + new Date(f.modifiedTime).toLocaleString('it-IT') + '). Caricarla?')) {
+                if (!f) { try { localStorage.setItem(SYNCED_ONCE_KEY, '1'); } catch (e2) {} return driveUpload(); } // nessun backup: primo dispositivo, carico i miei dati
+
+                const r = await fetch('https://www.googleapis.com/drive/v3/files/' + f.id + '?alt=media', { headers: { Authorization: 'Bearer ' + DTOKEN } });
+                if (r.status === 401) { driveClearToken(); throw new Error('auth'); }
+                const remote = await r.json();
+                const rT = new Date((remote && remote.updated) || 0).getTime();
+                const lT = new Date(getContentUpdated() || 0).getTime();
+                const firstSyncOnThisDevice = !localStorage.getItem(SYNCED_ONCE_KEY);
+
+                if (firstSyncOnThisDevice) {
+                    // Primo collegamento di QUESTO dispositivo a Drive: qui sta il bug
+                    // che impediva la sincronizzazione tra telefono e tablet. Un
+                    // dispositivo appena aperto non ha mai un timestamp di contenuto
+                    // significativo, quindi non va mai usato per decidere se
+                    // sovrascrivere un backup che può contenere i dati veri di un
+                    // altro dispositivo. Se qui non c'è nulla di reale, adottiamo
+                    // sempre il backup silenziosamente; se invece questo dispositivo
+                    // ha già dati suoi mai sincronizzati, chiediamo una sola volta.
+                    if (!hasRealLocalContent()) {
                         applyAllData(remote);
+                        try { localStorage.setItem(SYNCED_ONCE_KEY, '1'); } catch (e2) {}
                         location.reload();
+                        return;
                     }
-                } else {
-                    driveUpload();
+                    const useRemote = confirm('Questo dispositivo non si è mai sincronizzato con Drive. È già presente un backup del ' +
+                        new Date(remote.updated || f.modifiedTime).toLocaleString('it-IT') +
+                        '.\n\nOK = usa i dati di Drive (quelli presenti solo su questo dispositivo andranno persi)\nAnnulla = mantieni i dati di questo dispositivo e sovrascrivi Drive');
+                    try { localStorage.setItem(SYNCED_ONCE_KEY, '1'); } catch (e2) {}
+                    if (useRemote) { applyAllData(remote); location.reload(); }
+                    else { driveUpload(); }
+                    return;
                 }
+
+                // Sincronizzazioni successive: confronto silenzioso tra timestamp
+                // di CONTENUTO (aggiornati solo quando i dati cambiano davvero),
+                // non tra "adesso" e l'ora del file su Drive.
+                if (rT > lT + 2000) { applyAllData(remote); location.reload(); }
+                else if (lT > rT + 2000) { driveUpload(); }
+                // altrimenti sono già allineati: non fare nulla
             } catch (e) {
                 if (String(e && e.message) === 'auth' && !driveReauthed) { driveReauthed = true; driveSilentAuth(); }
             }
