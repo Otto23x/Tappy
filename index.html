@@ -36,6 +36,37 @@
         document.head.appendChild(l);
       }catch(e){}
     })();
+    /* Prompt d'installazione automatico: quando il browser segnala che l'app è
+       installabile, mostriamo da soli un banner "Installa" (come fa Nutri). Il
+       listener va registrato subito, perché l'evento può scattare molto presto. */
+    (function(){
+      let deferredPrompt=null;
+      const KEY_DISMISS='tapis_install_dismiss';
+      function isStandalone(){return (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;}
+      function showBanner(){
+        if(isStandalone())return;
+        if(document.getElementById('install-banner'))return;
+        if(!document.body){document.addEventListener('DOMContentLoaded',showBanner);return;}
+        const b=document.createElement('div');
+        b.id='install-banner';
+        b.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border:1px solid #334155;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);font-family:Segoe UI,-apple-system,sans-serif;';
+        b.innerHTML='<span style="font-size:22px">📲</span><div style="flex:1;font-size:13px;line-height:1.35"><b>Installa Tapis</b><br><span style="opacity:.85;font-size:12px">Aggiungila alla schermata Home per aprirla come app.</span></div>'+
+          '<button id="install-yes" style="background:#f97316;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer">Installa</button>'+
+          '<button id="install-no" aria-label="Chiudi" style="background:transparent;color:#cbd5e1;border:0;font-size:18px;cursor:pointer;padding:4px 6px">✕</button>';
+        document.body.appendChild(b);
+        document.getElementById('install-no').onclick=()=>{try{localStorage.setItem(KEY_DISMISS,String(Date.now()));}catch(e){}b.remove();};
+        document.getElementById('install-yes').onclick=async()=>{
+          if(deferredPrompt){b.remove();deferredPrompt.prompt();try{await deferredPrompt.userChoice;}catch(e){}deferredPrompt=null;}
+          else{alert('Per installare: apri il menu del browser (⋮) e scegli "Installa app" oppure "Aggiungi a schermata Home".');}
+        };
+      }
+      window.addEventListener('beforeinstallprompt',function(e){
+        e.preventDefault();deferredPrompt=e;
+        let dis=0;try{dis=+localStorage.getItem(KEY_DISMISS)||0;}catch(e2){}
+        if(Date.now()-dis>7*24*3600*1000)showBanner(); // non ri-disturbare se rifiutato negli ultimi 7 giorni
+      });
+      window.addEventListener('appinstalled',function(){const b=document.getElementById('install-banner');if(b)b.remove();deferredPrompt=null;try{localStorage.removeItem(KEY_DISMISS);}catch(e){}});
+    })();
     </script>
     <style>
         :root {
@@ -737,7 +768,7 @@
                         <option value="montagna">🏔️ Montagna</option>
                     </select>
                 </div>
-                <div style="font-size:10px; color:var(--text-muted); margin-top:6px;">ℹ️ La pendenza non viene registrata negli allenamenti manuali per limiti del protocollo Bluetooth (il tapis non la trasmette in modo affidabile): qui viene sempre conteggiata come 0%, il terreno scelto sopra determina solo il video.</div>
+                <div style="font-size:10px; color:var(--text-muted); margin-top:6px;">ℹ️ Andatura → velocità (passeggiata 6, jogging 8, corsa 10 km/h). Terreno → pendenza nominale (pianura 0%, collina 5%, montagna 10%) e video. La pendenza reale non arriva via Bluetooth: questi valori servono al profilo del programma e alla stima calorie.</div>
             </div>
 
             <div class="control-group" id="duration-control-group">
@@ -964,6 +995,7 @@
                     <select id="goal-type" onchange="updateGoalFormFields()" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-main); margin-bottom:10px;">
                         <option value="volume">Volume (es. tot km a settimana/mese/anno)</option>
                         <option value="time_distance">Tempo su distanza (es. 4 km in meno di 30 min)</option>
+                        <option value="frequency">Frequenza (es. almeno 2 allenamenti a settimana)</option>
                     </select>
 
                     <div id="goal-fields-volume" class="profile-grid">
@@ -989,6 +1021,20 @@
                         <div>
                             <label>Tempo massimo (minuti)</label>
                             <input type="number" id="goal-time-minutes" step="0.5" placeholder="es. 30">
+                        </div>
+                    </div>
+
+                    <div id="goal-fields-frequency" class="profile-grid" style="display:none;">
+                        <div>
+                            <label>Allenamenti (almeno)</label>
+                            <input type="number" id="goal-freq-count" step="1" min="1" placeholder="es. 2">
+                        </div>
+                        <div>
+                            <label>Periodo</label>
+                            <select id="goal-freq-period" style="width:100%; padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-main);">
+                                <option value="week">a settimana</option>
+                                <option value="month">al mese</option>
+                            </select>
                         </div>
                     </div>
 
@@ -1101,6 +1147,17 @@
                 <div id="ai-analysis-latest"><div class="session-meta">Nessuna analisi generata ancora.</div></div>
                 <div id="ai-analysis-history-toggle" style="display:none; font-size:11px; color:var(--accent-blue); margin-top:8px; cursor:pointer;" onclick="toggleAiHistory('analysis')">▼ Storico analisi precedenti</div>
                 <div id="ai-analysis-history" style="display:none; margin-top:8px;"></div>
+            </div>
+
+            <div class="panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <label style="font-size:13px; font-weight:700;">💬 Chiedi all'AI</label>
+                </div>
+                <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Domande sui tuoi risultati, obiettivi e progressi (es. "se continuo con questo ritmo, a quanti km/anno arrivo?"). Rispondo solo a domande inerenti ai tuoi dati.</div>
+                <textarea id="ai-qa-input" rows="2" placeholder="Scrivi la tua domanda..." style="width:100%; box-sizing:border-box; padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-secondary); color:var(--text-main); resize:vertical; font-size:13px;"></textarea>
+                <button class="btn btn-start" style="margin-top:8px; padding:8px 16px; font-size:12px;" onclick="askAiQuestion()">Invia domanda</button>
+                <div id="ai-qa-status" style="font-size:11px; color:var(--text-muted); margin-top:8px;"></div>
+                <div id="ai-qa-answer"></div>
             </div>
 
             <div class="panel">
@@ -1577,21 +1634,24 @@
             "jogging_montagna":     "salita_montagna",
             "corsa_montagna":       "trail_running_montagna"
         };
-        const manualSpeedByAndatura = { "passeggiata": 4.5, "jogging": 6.5, "corsa": 9.5 };
+        const manualSpeedByAndatura = { "passeggiata": 6, "jogging": 8, "corsa": 10 };
+        // Pendenza nominale per terreno nell'Allenamento Manuale (usata nel
+        // profilo del programma e per la stima calorie): pianura 0%, collina 5%,
+        // montagna 10%. Scelta dall'utente, non dedotta dal Bluetooth.
+        const manualInclineByTerreno = { "pianura": 0, "collina": 5, "montagna": 10 };
         let manualCategory = null;
 
-        // La pendenza non viene più usata nel profilo numerico dell'allenamento
-        // manuale (0% fisso): il Bluetooth di questo tapis manda valori di
-        // pendenza inattendibili, quindi teniamo solo la velocità, che è
-        // affidabile. Il "terreno" scelto sopra sceglie solo il video.
+        // La velocità (affidabile) e la pendenza nominale del terreno definiscono
+        // il profilo del programma manuale. Il "terreno" determina anche il video.
         function applyManualSelection() {
             const andatura = document.getElementById('manual-andatura').value;
             const terreno = document.getElementById('manual-terreno').value;
             const spd = manualSpeedByAndatura[andatura];
+            const inc = manualInclineByTerreno[terreno] || 0;
             manualCategory = manualMatrixCategory[`${andatura}_${terreno}`];
 
             currentProgram.speed = Array(10).fill(spd);
-            currentProgram.incline = Array(10).fill(0);
+            currentProgram.incline = Array(10).fill(inc);
 
             calculateSegments();
             if (isRunning) resetTimer();
@@ -2290,6 +2350,7 @@
             const type = document.getElementById('goal-type').value;
             document.getElementById('goal-fields-volume').style.display = type === 'volume' ? 'grid' : 'none';
             document.getElementById('goal-fields-time').style.display = type === 'time_distance' ? 'grid' : 'none';
+            document.getElementById('goal-fields-frequency').style.display = type === 'frequency' ? 'grid' : 'none';
         }
 
         function saveGoal() {
@@ -2304,6 +2365,13 @@
                 goal.targetKm = km;
                 goal.periodType = period;
                 goal.description = `${km} km ${period === 'week' ? 'a settimana' : period === 'month' ? 'al mese' : "all'anno"}`;
+            } else if (type === 'frequency') {
+                const count = parseInt(document.getElementById('goal-freq-count').value, 10);
+                const period = document.getElementById('goal-freq-period').value;
+                if (!count || count <= 0) { alert('Inserisci un numero di allenamenti valido.'); return; }
+                goal.targetCount = count;
+                goal.periodType = period;
+                goal.description = `almeno ${count} ${count === 1 ? 'allenamento' : 'allenamenti'} ${period === 'week' ? 'a settimana' : 'al mese'}`;
             } else {
                 const km = parseFloat(document.getElementById('goal-time-km').value);
                 const minutes = parseFloat(document.getElementById('goal-time-minutes').value);
@@ -2319,6 +2387,7 @@
             document.getElementById('goal-volume-km').value = '';
             document.getElementById('goal-time-km').value = '';
             document.getElementById('goal-time-minutes').value = '';
+            document.getElementById('goal-freq-count').value = '';
             renderHistoryViews();
         }
 
@@ -2333,6 +2402,9 @@
                 const km = history.filter(e => isInPeriod(e.dateISO, goal.periodType))
                     .reduce((s, e) => s + e.km, 0);
                 return { current: km, target: goal.targetKm, pct: Math.min(100, (km / goal.targetKm) * 100) };
+            } else if (goal.type === 'frequency') {
+                const count = history.filter(e => isInPeriod(e.dateISO, goal.periodType)).length;
+                return { current: count, target: goal.targetCount, pct: Math.min(100, (count / goal.targetCount) * 100), achieved: count >= goal.targetCount };
             } else {
                 const requiredSpeed = goal.targetDistanceKm / (goal.targetMinutes / 60);
                 const attempts = history.filter(e => e.km >= goal.targetDistanceKm * 0.95);
@@ -2357,6 +2429,11 @@
                     body = `<div class="session-meta">${p.current.toFixed(1)} / ${p.target} km — ${Math.round(p.pct)}%</div>
                         <div style="background:var(--border-color); border-radius:6px; height:6px; margin-top:4px; overflow:hidden;">
                             <div style="background:var(--accent-blue); height:100%; width:${p.pct}%;"></div>
+                        </div>`;
+                } else if (g.type === 'frequency') {
+                    body = `<div class="session-meta">${p.current} / ${p.target} allenamenti ${g.periodType === 'week' ? 'questa settimana' : 'questo mese'}${p.achieved ? ' — ✅ raggiunto' : ''}</div>
+                        <div style="background:var(--border-color); border-radius:6px; height:6px; margin-top:4px; overflow:hidden;">
+                            <div style="background:${p.achieved ? '#22c55e' : 'var(--accent-blue)'}; height:100%; width:${p.pct}%;"></div>
                         </div>`;
                 } else {
                     body = p.achieved
@@ -2765,6 +2842,43 @@ Formato risposta: 3 righe max — 1) stato sintetico, 2) un dato numerico rileva
             }
         }
 
+        // 💬 Chiedi all'AI: domanda libera dell'utente sui propri dati/risultati,
+        // con filtro di pertinenza (se fuori tema, l'AI restituisce NON_PERTINENTE).
+        async function askAiQuestion() {
+            const input = document.getElementById('ai-qa-input');
+            const statusEl = document.getElementById('ai-qa-status');
+            const answerEl = document.getElementById('ai-qa-answer');
+            const q = (input && input.value || '').trim();
+            answerEl.innerHTML = '';
+            if (!q) { statusEl.innerText = 'Scrivi prima una domanda.'; return; }
+            if (!getAiKey()) { statusEl.innerText = '⚠️ Inserisci prima la chiave Gemini in Connessioni.'; return; }
+            statusEl.innerText = '🤔 Sto pensando...';
+            try {
+                const context = buildAiContextSummary();
+                const prompt = `Sei l'assistente della app Tapis (allenamento su tapis roulant). L'utente ti fa una domanda sui suoi dati di allenamento, obiettivi e progressi. Usa SOLO i dati qui sotto.
+
+${context}
+
+DOMANDA DELL'UTENTE: "${q}"
+
+REGOLE:
+- Se la domanda NON riguarda l'allenamento, i risultati, gli obiettivi, i progressi, il fisico o il benessere registrati in questa app, rispondi ESATTAMENTE con la sola parola: NON_PERTINENTE (in maiuscolo, senza altro).
+- Altrimenti rispondi in italiano, massimo 120 parole, diretto e concreto, basandoti solo sui dati sopra. Se servono stime (es. km/anno), calcolale dal ritmo recente e dichiara che è una proiezione. Se i dati sono insufficienti, dillo.`;
+                const text = await geminiCallSimple(prompt);
+                if (String(text).trim().toUpperCase().startsWith('NON_PERTINENTE')) {
+                    statusEl.innerText = '';
+                    answerEl.innerHTML = '<div class="session-meta" style="color:var(--accent-orange); margin-top:8px;">⚠️ Posso rispondere solo a domande sui tuoi dati di allenamento, obiettivi e progressi.</div>';
+                    return;
+                }
+                statusEl.innerText = '';
+                const safe = String(text).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                answerEl.innerHTML = `<div style="border:1px solid var(--border-color); border-radius:10px; padding:10px; margin-top:8px; background:var(--bg-primary); font-size:12px; white-space:pre-wrap; line-height:1.5;">${safe}</div>`;
+            } catch (e) {
+                statusEl.innerText = '⚠️ ' + e.message;
+                answerEl.innerHTML = '';
+            }
+        }
+
         function deleteAiLogEntry(id) {
             saveAiLogData(loadAiLog().filter(l => l.id !== id));
             renderAiSections();
@@ -2821,7 +2935,49 @@ Formato risposta: 3 righe max — 1) stato sintetico, 2) un dato numerico rileva
            stesso pattern usato nel Diario Dieta & Sport.
            ═══════════════════════════════════════════════════════════════ */
         const DRIVE_SETTINGS_KEY = 'bcube_drive';
-        let DTOKEN = null, tokenClient = null;
+        let DTOKEN = null, tokenClient = null, driveReauthed = false;
+        /* Cache del token d'accesso Drive: dopo il primo consenso, entro la sua
+           durata (~1h) l'app riusa il token salvato senza richiedere di nuovo
+           l'accesso, anche dopo un riavvio; alla scadenza si rinnova in silenzio. */
+        const DTOK_KEY = 'bcube_dtoken';
+        function driveSaveToken(t) {
+            try {
+                if (t && t.access_token) {
+                    DTOKEN = t.access_token;
+                    const exp = Date.now() + (((+t.expires_in || 3600) - 90) * 1000);
+                    localStorage.setItem(DTOK_KEY, JSON.stringify({ tok: t.access_token, exp }));
+                }
+            } catch (e) {}
+        }
+        function driveCachedToken() {
+            try {
+                const c = JSON.parse(localStorage.getItem(DTOK_KEY) || 'null');
+                if (c && c.tok && c.exp && Date.now() < c.exp) return c.tok;
+            } catch (e) {}
+            return null;
+        }
+        function driveClearToken() { DTOKEN = null; try { localStorage.removeItem(DTOK_KEY); } catch (e) {} }
+        function driveSilentAuth() {
+            const s = loadDriveSettings();
+            if (!(s.cid)) return;
+            loadGSI(() => {
+                try {
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: s.cid,
+                        scope: 'https://www.googleapis.com/auth/drive.appdata',
+                        callback: async t => {
+                            if (t && t.access_token) {
+                                driveSaveToken(t);
+                                await driveSyncOnStart();
+                                const st = document.getElementById('driveStatus'); if (st) st.innerText = '✅ Sincronizzato con Drive.';
+                            }
+                        },
+                        error_callback: () => {}
+                    });
+                    tokenClient.requestAccessToken({ prompt: '' });
+                } catch (e) {}
+            });
+        }
 
         function loadDriveSettings() {
             try { return JSON.parse(localStorage.getItem(DRIVE_SETTINGS_KEY)) || {}; }
@@ -2880,7 +3036,7 @@ Formato risposta: 3 righe max — 1) stato sintetico, 2) un dato numerico rileva
                     client_id: s.cid,
                     scope: 'https://www.googleapis.com/auth/drive.appdata',
                     callback: async t => {
-                        DTOKEN = t.access_token;
+                        driveSaveToken(t);
                         const settings = loadDriveSettings(); settings.on = true;
                         localStorage.setItem(DRIVE_SETTINGS_KEY, JSON.stringify(settings));
                         document.getElementById('driveStatus').innerText = '✅ Connesso. Sincronizzo...';
@@ -2894,6 +3050,7 @@ Formato risposta: 3 righe max — 1) stato sintetico, 2) un dato numerico rileva
         async function driveFind() {
             const r = await fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name%3D%27bcube_backup.json%27&fields=files(id,modifiedTime)",
                 { headers: { Authorization: 'Bearer ' + DTOKEN } });
+            if (r.status === 401) { driveClearToken(); throw new Error('auth'); }
             const j = await r.json();
             return (j.files && j.files[0]) || null;
         }
@@ -2931,23 +3088,15 @@ Formato risposta: 3 righe max — 1) stato sintetico, 2) un dato numerico rileva
         function tryDriveAuto() {
             const s = loadDriveSettings();
             if (!(s.on && s.cid) || window.location.protocol === 'file:') return;
-            loadGSI(() => {
-                try {
-                    tokenClient = google.accounts.oauth2.initTokenClient({
-                        client_id: s.cid,
-                        scope: 'https://www.googleapis.com/auth/drive.appdata',
-                        callback: async t => {
-                            if (t && t.access_token) {
-                                DTOKEN = t.access_token;
-                                await driveSyncOnStart();
-                                const st = document.getElementById('driveStatus'); if (st) st.innerText = '✅ Sincronizzato con Drive.';
-                            }
-                        },
-                        error_callback: () => {}
-                    });
-                    tokenClient.requestAccessToken({ prompt: '' });
-                } catch (e) {}
-            });
+            const cached = driveCachedToken();
+            if (cached) {
+                DTOKEN = cached;
+                driveSyncOnStart()
+                    .then(() => { const st = document.getElementById('driveStatus'); if (st) st.innerText = '✅ Sincronizzato con Drive.'; })
+                    .catch(() => {});
+                return;
+            }
+            driveSilentAuth();
         }
 
         async function driveSyncOnStart() {
@@ -2965,7 +3114,9 @@ Formato risposta: 3 righe max — 1) stato sintetico, 2) un dato numerico rileva
                 } else {
                     driveUpload();
                 }
-            } catch (e) { /* silenzioso */ }
+            } catch (e) {
+                if (String(e && e.message) === 'auth' && !driveReauthed) { driveReauthed = true; driveSilentAuth(); }
+            }
         }
 
 
