@@ -703,7 +703,7 @@
     <header>
         <div class="logo-container">
             <div class="logo-box">Tapis</div>
-            <div class="logo-text">Dashboard</div>
+            <div class="logo-text"></div>
         </div>
         <div class="header-nav">
             <button id="nav-workout" class="active" onclick="switchView('workout')">🏃 Run</button>
@@ -2028,9 +2028,7 @@
         }
 
         function updateHeaderName() {
-            const p = loadProfile();
-            const el = document.querySelector('.logo-text');
-            if (el) el.innerText = p.name ? ('Ciao, ' + p.name) : 'Dashboard';
+            // Il banner resta pulito: niente più "Dashboard" né saluto col nome.
         }
 
         // Distanza percorsa (km): somma velocità × tempo per ogni segmento
