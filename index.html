@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tapis - Allenamento Interattivo Mobile</title>
+    <title>Tappy - Allenamento Interattivo Mobile</title>
     <script>
     /* Pulizia difensiva: elimina qualunque service worker/cache registrati in
        precedenza (residuo di un tentativo di PWA con offline che ha causato
@@ -22,7 +22,7 @@
       try{
         const ICON192="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAACOklEQVR4nO3UIUoGYRRGYUfchKCDO7CYJllch/1vdjHL7MHsLkwGk0sQLIK7cA3O+eFj4Hn6hTcc7jQv6wlsdTp6APsmIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASM5GD9jicPHxcPk+esXxPX3dvf5ej17xPz4QiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiGSal3X0hsEer97uzz+33b783Dx/3x5zzd74QCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiCSaV7W0RvYMR+IREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZEIiERAJAIiERCJgEgERCIgEgGRCIhEQCQCIhEQiYBIBEQiIBIBkQiIREAkAiIREImASAREIiASAZH8AbX/ECbsgNa4AAAAAElFTkSuQmCC";
         const ICON512="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAIAAAB7GkOtAAAHcElEQVR4nO3XoUlFARiGYY84ghhvEQcQTCcJVqsLGUROcQKTK1icw2ITiziGG8gtlx95n2eCr718y27djgDoOZ4eAMAMAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIg6mR7AYT2cv92dvU+v4L96/r56/LqeXsGheAAAUQIAECUAAFECABAlAABRAgAQJQAAUQIAECUAAFECABAlAABRAgAQJQAAUQIAECUAAFECABAlAABRAgAQJQAAUQIAECUAAFECABAlAABRAgAQJQAAUQIAECUAAFECABAlAABRAgAQJQAAUQIAECUAAFECABAlAABRAgAQJQAAUQIAECUAAFECABC17NZtegPs6/b04+nidXrFX+4/b15+LqdXwF48AIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgCgBAIgSAIAoAQCIEgCAKAEAiBIAgKhlt27TGwAY4AEARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARAkAQJQAAEQJAECUAABECQBAlAAARP0CSs0SpkahuLMAAAAASUVORK5CYII=";
-        const man={name:"Tapis Dashboard",short_name:"Tapis",display:"standalone",
+        const man={name:"Tappy Dashboard",short_name:"Tappy",display:"standalone",
           start_url:location.href.split("#")[0],scope:location.href.replace(/[^/]*$/,""),
           background_color:"#0f172a",theme_color:"#1e3a8a",
           icons:[
@@ -50,7 +50,7 @@
         const b=document.createElement('div');
         b.id='install-banner';
         b.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border:1px solid #334155;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 24px rgba(0,0,0,.4);font-family:Segoe UI,-apple-system,sans-serif;';
-        b.innerHTML='<span style="font-size:22px">📲</span><div style="flex:1;font-size:13px;line-height:1.35"><b>Installa Tapis</b><br><span style="opacity:.85;font-size:12px">Aggiungila alla schermata Home per aprirla come app.</span></div>'+
+        b.innerHTML='<span style="font-size:22px">📲</span><div style="flex:1;font-size:13px;line-height:1.35"><b>Installa Tappy</b><br><span style="opacity:.85;font-size:12px">Aggiungila alla schermata Home per aprirla come app.</span></div>'+
           '<button id="install-yes" style="background:#f97316;color:#fff;border:0;border-radius:8px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer">Installa</button>'+
           '<button id="install-no" aria-label="Chiudi" style="background:transparent;color:#cbd5e1;border:0;font-size:18px;cursor:pointer;padding:4px 6px">✕</button>';
         document.body.appendChild(b);
@@ -736,7 +736,7 @@
 
     <header>
         <div class="logo-container">
-            <div class="logo-box">Tapis</div>
+            <div class="logo-box">Tappy</div>
             <div class="logo-text"></div>
         </div>
         <div class="header-nav">
@@ -789,7 +789,7 @@
             </div>
 
             <div class="control-group">
-                <label>Tapis Bluetooth (sperimentale, sola lettura)</label>
+                <label>Bluetooth tapis roulant (sperimentale, sola lettura)</label>
                 <button id="btn-bluetooth" class="btn" style="background: var(--border-color); color: white;" onclick="connectBluetoothTreadmill()">🔗 Collega Bluetooth</button>
                 <div id="bt-status" style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">Non connesso. Funziona solo se il tapis espone lo standard FTMS (il Bcube A8 Plus è certificato ufficialmente solo per le app Kinomap/AnyRun, quindi non è garantito).</div>
             </div>
@@ -1018,6 +1018,10 @@
                 <div id="bucket-kpi-hint" style="display:none; font-size:11px; color:var(--accent-blue); margin-bottom:8px; cursor:pointer;" onclick="clearBucketSelection()">🔍 Filtro attivo su una colonna del grafico — tocca qui per tornare al periodo intero</div>
                 <div class="summary-grid">
                     <div class="stat-box">
+                        <div class="stat-label">Dist. tot. (km)</div>
+                        <div id="sum-km" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-box">
                         <div class="stat-label">Tempo (min)</div>
                         <div id="sum-time" class="stat-value">0</div>
                     </div>
@@ -1041,7 +1045,7 @@
                 <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">🏆 Record Personali</label>
                 <div class="summary-grid" id="records-grid">
                     <div class="stat-box"><div class="stat-label">Dist. maggiore (km)</div><div id="rec-km" class="stat-value">—</div></div>
-                    <div class="stat-box"><div class="stat-label">V. Med. maggiore (Km/h)</div><div id="rec-speed" class="stat-value">—</div></div>
+                    <div class="stat-box"><div class="stat-label">V. Med. Max (km/h)</div><div id="rec-speed" class="stat-value">—</div></div>
                     <div class="stat-box"><div class="stat-label">Sess. maggiore (min)</div><div id="rec-duration" class="stat-value">—</div></div>
                     <div class="stat-box"><div class="stat-label">Dist. totale (km)</div><div id="rec-total" class="stat-value">—</div></div>
                 </div>
@@ -1112,20 +1116,16 @@
                         </div>
                     </div>
                     <div style="font-size:10px; color:var(--text-muted); margin-top:8px;">ℹ️ La velocità media viene calcolata da tempo e distanza. La pendenza usata per le calorie è quella <b>media prevista dal programma selezionato</b> — potrebbe non corrispondere esattamente a quella che avevi impostato realmente sul tapis, perché il protocollo Bluetooth di questo tapis non permette di registrarla in modo affidabile.</div>
+                    <div style="margin-top:10px;">
+                        <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Come mi sono sentito</label>
+                        <div id="manual-entry-feeling" data-rating="0" style="font-size:26px; letter-spacing:3px; cursor:pointer;">
+                            <span onclick="setManualFeeling(1)">★</span><span onclick="setManualFeeling(2)">★</span><span onclick="setManualFeeling(3)">★</span><span onclick="setManualFeeling(4)">★</span><span onclick="setManualFeeling(5)">★</span>
+                        </div>
+                    </div>
                     <button class="btn btn-start" style="margin-top:10px; padding:8px 16px; font-size:12px;" onclick="addManualSessionEntry()">Salva sessione</button>
                 </div>
 
                 <div id="session-list"><div class="session-meta">Nessuna sessione ancora registrata: completa un allenamento per vederlo qui.</div></div>
-            </div>
-
-            <div class="panel">
-                <label style="font-size:13px; font-weight:700; margin-bottom:8px; display:block;">😌 Come ti sei sentito</label>
-                <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">Un voto al giorno, anche nei giorni senza allenamento — utile al Coach AI per capire se cali di performance dipendono dalla stanchezza o da altro.</div>
-                <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
-                    <input type="date" id="wellness-date" onchange="renderWellnessStars()" style="padding:8px; border-radius:8px; border:1px solid var(--border-color); background:var(--bg-primary); color:var(--text-main); font-size:12px;">
-                    <div id="wellness-stars" style="font-size:24px; letter-spacing:2px; cursor:pointer;"></div>
-                </div>
-                <div id="wellness-list"></div>
             </div>
 
         </div>
@@ -1184,14 +1184,12 @@
                     </div>
                 </div>
                 <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
-                    <button class="btn btn-start" style="padding:8px 14px; font-size:12px;" onclick="driveConnect()">🔗 Collega Drive</button>
-                    <button class="btn btn-reset" style="padding:8px 14px; font-size:12px;" onclick="driveUpload()">☁️ Salva ora</button>
-                    <button class="btn btn-reset" style="padding:8px 14px; font-size:12px;" onclick="driveImport()">⬇️ Importa da Drive</button>
-                    <button class="btn btn-reset" style="padding:8px 14px; font-size:12px; background-color:#475569;" onclick="driveDisconnect()">🔌 Scollega dispositivo</button>
+                    <button class="btn btn-start" style="padding:8px 14px; font-size:12px;" onclick="driveConnect()">🔗 Connetti e sincronizza</button>
+                    <button class="btn btn-reset" style="padding:8px 14px; font-size:12px; background-color:#475569;" onclick="driveDisconnect()">🔌 Disconnetti e desincronizza</button>
                     <button class="btn btn-reset" style="padding:8px 14px; font-size:12px; background-color:#7f1d1d;" onclick="driveDelete()">🗑️ Elimina backup</button>
                 </div>
                 <div id="driveStatus" style="font-size:11px; color:var(--text-muted); margin-top:8px;">Non connesso.</div>
-                <div style="font-size:11px; color:var(--text-muted); margin-top:6px;"><b>Scollega dispositivo</b>: stacca solo questo dispositivo, il backup su Drive e gli altri restano intatti. <b>Elimina backup</b>: cancella il file su Drive (sparisce da tutti i dispositivi, con conferma).</div>
+                <div style="font-size:11px; color:var(--text-muted); margin-top:6px;"><b>Disconnetti e desincronizza</b>: stacca solo questo dispositivo, il backup su Drive e gli altri restano intatti. <b>Elimina backup</b>: cancella il file su Drive (sparisce da tutti i dispositivi, con conferma).</div>
 
                 <div class="profile-grid" style="margin-top:14px;">
                     <div class="full">
@@ -1209,6 +1207,11 @@
                         <button class="btn btn-reset" style="padding:8px 14px; font-size:12px;" onclick="document.getElementById('import-backup-file').click()">⬆️ Importa backup</button>
                         <input type="file" id="import-backup-file" accept="application/json" style="display:none;" onchange="importFullBackup(event)">
                     </div>
+                </div>
+                <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border-color);">
+                    <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">🥗 Esporta per Nutry</label>
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Esporta qui il backup (.json) e importalo in <b>Nutry</b> (Io → Allenamenti da Tappy → “Importa da file Tappy”) per far entrare gli allenamenti nel diario alimentare. In alternativa, con lo <b>stesso CLIENT_ID Drive</b> su entrambe le app, Nutry può importarli direttamente da Drive.</div>
+                    <button class="btn btn-start" style="padding:8px 14px; font-size:12px;" onclick="exportFullBackup()">⬇️ Esporta per Nutry (.json)</button>
                 </div>
             </div>
 
@@ -1240,7 +1243,7 @@
                 <tr><td>🔗</td><td><b>Bluetooth</b>: funziona solo se il tuo tapis espone lo standard aperto FTMS. Appena rileva movimento parte da solo un allenamento a tempo libero (M1); si ferma da solo quando il tapis torna a velocità 0 — non serve alcun pulsante di stop nell'app.</td></tr>
                 <tr><td>🎬</td><td><b>Video</b>: scelto in automatico in base a velocità/pendenza del programma (o alla scelta manuale in M1). Se un video risulta bloccato, l'app passa al successivo da sola.</td></tr>
                 <tr><td>🎯</td><td><b>Obiettivi</b> (in Storico): "volume" (km per settimana/mese/anno) o "tempo su distanza" (es. 4 km in meno di 30 min). Il progresso si calcola da solo dallo storico.</td></tr>
-                <tr><td>⭐</td><td><b>Benessere</b>: un voto 1-5 al giorno, anche senza allenamento — aiuta il Coach AI a capire se un calo di performance dipende dalla stanchezza.</td></tr>
+                <tr><td>⭐</td><td><b>Come mi sono sentito</b>: dai un voto 1-5 direttamente a ogni sessione (le stelline sotto ciascun allenamento nello storico) — aiuta il Coach AI a capire se un calo di performance dipende dalla stanchezza.</td></tr>
                 <tr><td>🩹</td><td><b>Infortuni/Pause</b>: segnali un periodo di recupero e il Coach AI eviterà di consigliarti di aumentare il carico in quel periodo.</td></tr>
                 <tr><td>📊</td><td><b>Grafico Andamento</b>: tocca una colonna per filtrare i numeri del Riepilogo su quel singolo periodo; ritocca per tornare alla vista intera.</td></tr>
                 <tr><td>✏️</td><td><b>Aggiungi sessione</b> (in Sessioni): per registrare un allenamento fatto con un programma numerato senza Bluetooth — inserisci tempo e km, l'app calcola la velocità media e stima le calorie con la pendenza nominale del programma.</td></tr>
@@ -1252,7 +1255,7 @@
 
             <div class="panel"><label style="font-size:15px; font-weight:700; margin-bottom:8px; display:block;">💾 Backup & dati</label>
                 <div class="hint"><b>Dove sono i dati:</b> nel browser di questo dispositivo, non nel file dell'app. Aggiornare l'app (ricaricando un nuovo index.html su GitHub) non li tocca.<br><br>
-                <b>Drive</b> (Io → Connessioni): dopo "Collega Drive", "Salva ora" carica tutto, "Importa da Drive" scarica e sovrascrive il locale.<br><br>
+                <b>Drive</b> (Io → Connessioni): dopo <b>"Connetti e sincronizza"</b> telefono e PC condividono automaticamente gli stessi dati (l'app carica e scarica da sola a ogni avvio). <b>Disconnetti e desincronizza</b> stacca solo questo dispositivo; <b>Elimina backup</b> cancella il file su Drive per tutti i dispositivi.<br><br>
                 <b>Backup locale</b>: stesso pannello — Esporta/Importa un file .json con tutti i dati (profilo, storico, obiettivi, fisico, benessere, infortuni, analisi AI). Utile prima di cambiare telefono o come rete di sicurezza anche senza Drive.</div>
             </div>
 
@@ -1291,7 +1294,7 @@
                 <table class="gtable">
                     <tr><td>1</td><td>Vai su <b>Io → Connessioni</b></td></tr>
                     <tr><td>2</td><td>Incolla il Client ID nel campo <b>CLIENT_ID</b></td></tr>
-                    <tr><td>3</td><td>Premi <b>"🔗 Collega Drive"</b> e autorizza col tuo account (ora sbloccato)</td></tr>
+                    <tr><td>3</td><td>Premi <b>"🔗 Connetti e sincronizza"</b> e autorizza col tuo account (ora sbloccato)</td></tr>
                 </table>
 
                 <div class="gsec">Parte 2 — Google Gemini API</div>
@@ -1300,6 +1303,18 @@
                     <tr><td>2</td><td>Clicca in alto a destra su <b>"Crea chiave"</b></td></tr>
                     <tr><td>3</td><td>Scegli/crea il progetto Google Cloud a cui associarla</td></tr>
                     <tr><td>4</td><td>Genera la chiave e copiala nel campo <b>Gemini API Key</b> in Io → Connessioni</td></tr>
+                </table>
+
+                <div class="gsec">Parte 3 — YouTube Data API (opzionale)</div>
+                <div style="font-size:11.5px; color:var(--text-muted); margin-bottom:8px;">Serve solo come <b>riserva</b>: l'app ha già una libreria video interna. Con la chiave, se la libreria si esaurisce, l'app cerca nuovi video di allenamento dal vivo su YouTube. Puoi tranquillamente saltarla.</div>
+                <table class="gtable">
+                    <tr><td>1</td><td>Vai su <b>console.cloud.google.com</b> (stesso progetto del Client ID va benissimo)</td></tr>
+                    <tr><td>2</td><td>Menu ☰ → <b>"API e servizi"</b> → <b>"Libreria"</b></td></tr>
+                    <tr><td>3</td><td>Cerca <b>"YouTube Data API v3"</b> e premi <b>"Abilita"</b></td></tr>
+                    <tr><td>4</td><td>Menu ☰ → "API e servizi" → <b>"Credenziali"</b></td></tr>
+                    <tr><td>5</td><td>"Crea credenziali" → <b>"Chiave API"</b></td></tr>
+                    <tr><td>6</td><td>Copia la chiave generata (facoltativo: "Limita chiave" → API → solo <b>YouTube Data API v3</b>)</td></tr>
+                    <tr><td>7</td><td>Incollala in <b>Io → Connessioni → YouTube Data API Key</b>: viene salvata subito.</td></tr>
                 </table>
             </div>
 
@@ -1511,7 +1526,7 @@
         }
 
         function onBtDisconnected() {
-            setBtStatus("🔌 Tapis disconnesso.");
+            setBtStatus("🔌 Tapis roulant disconnesso.");
             if (btLiveMode) endBtLiveWorkout(); // il tapis si è disconnesso a metà sessione: salvo comunque quanto raccolto
         }
 
@@ -2262,6 +2277,7 @@
                     });
                 }
                 document.getElementById('manual-entry-date').value = new Date().toISOString().slice(0, 10);
+                const fe = document.getElementById('manual-entry-feeling'); if (fe) { fe.setAttribute('data-rating','0'); drawManualFeeling(0); }
             }
             form.style.display = opening ? 'block' : 'none';
         }
@@ -2284,6 +2300,8 @@
             const weightKg = loadProfile().weightKg;
             const kcal = kcalPerMinuteFor(avgSpeed, avgIncline, weightKg) * minutes;
             const dateISO = dateVal ? new Date(dateVal + 'T12:00:00').toISOString() : new Date().toISOString();
+            const feelEl = document.getElementById('manual-entry-feeling');
+            const feeling = feelEl ? (parseInt(feelEl.getAttribute('data-rating'), 10) || 0) : 0;
 
             const entry = {
                 id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
@@ -2294,17 +2312,34 @@
                 kcal: kcal,
                 avgSpeed: avgSpeed,
                 complete: true,
-                manualEntry: true
+                manualEntry: true,
+                feeling: feeling
             };
             const history = loadHistory();
             history.push(entry);
             saveHistoryData(history);
+            if (feeling > 0) { const w = loadWellness(); w[new Date(dateISO).toISOString().slice(0,10)] = { rating: feeling }; saveWellnessData(w); }
             renderHistoryViews();
-            askSessionFeeling(entry.id, entry.dateISO);
+            if (feeling === 0) askSessionFeeling(entry.id, entry.dateISO); // se non hai già votato, chiedilo
 
             document.getElementById('manual-entry-minutes').value = '';
             document.getElementById('manual-entry-km').value = '';
+            if (feelEl) { feelEl.setAttribute('data-rating', '0'); drawManualFeeling(0); }
             toggleManualEntryForm();
+        }
+
+        function drawManualFeeling(n) {
+            const el = document.getElementById('manual-entry-feeling');
+            if (!el) return;
+            [...el.children].forEach((c, idx) => { c.style.color = idx < n ? 'var(--accent-orange)' : 'var(--border-color)'; });
+        }
+        function setManualFeeling(n) {
+            const el = document.getElementById('manual-entry-feeling');
+            if (!el) return;
+            const cur = parseInt(el.getAttribute('data-rating'), 10) || 0;
+            const val = (cur === n ? 0 : n);
+            el.setAttribute('data-rating', String(val));
+            drawManualFeeling(val);
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -2491,6 +2526,7 @@
 
         function renderWellnessStars() {
             const dateInput = document.getElementById('wellness-date');
+            if (!dateInput) return; // sezione benessere rimossa: il feeling è ora per-sessione
             if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0, 10);
             const wellness = loadWellness();
             const entry = wellness[dateInput.value];
@@ -2500,6 +2536,7 @@
 
         function drawStars() {
             const el = document.getElementById('wellness-stars');
+            if (!el) return;
             el.innerHTML = [1, 2, 3, 4, 5].map(n =>
                 `<span onclick="setWellnessRating(${n})" style="color:${n <= wellnessSelectedRating ? 'var(--accent-orange)' : 'var(--border-color)'};">★</span>`
             ).join('');
@@ -2553,6 +2590,7 @@
 
         function renderWellnessList() {
             const mount = document.getElementById('wellness-list');
+            if (!mount) return; // sezione benessere rimossa
             const wellness = loadWellness();
             const keys = Object.keys(wellness).sort().reverse().slice(0, 14);
             if (keys.length === 0) {
@@ -2568,6 +2606,19 @@
                     <button class="session-del" onclick="deleteWellnessEntry('${k}')">🗑️</button>
                 </div>`;
             }).join('');
+        }
+
+        // Feeling "come mi sento" integrato nella singola sessione (stelline inline).
+        function setSessionFeeling(id, n) {
+            const hist = loadHistory();
+            const it = hist.find(x => x.id === id);
+            if (!it) return;
+            it.feeling = (it.feeling === n ? 0 : n); // ritocca: ritocco stessa stella = azzera
+            saveHistoryData(hist);
+            // manteniamo anche il benessere del giorno per il Coach AI
+            if (it.feeling > 0) { const w = loadWellness(); w[new Date(it.dateISO).toISOString().slice(0,10)] = { rating: it.feeling }; saveWellnessData(w); }
+            renderSessionList();
+            if (typeof renderMiniSessionList === 'function') renderMiniSessionList();
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -2914,7 +2965,7 @@ Formato risposta: 3 righe max — 1) stato sintetico, 2) un dato numerico rileva
             statusEl.innerText = '🤔 Sto pensando…';
             try {
                 const context = buildAiContextSummary();
-                const prompt = `Sei l'assistente della app Tapis (allenamento su tapis roulant). L'utente ti fa una domanda sui suoi dati di allenamento, obiettivi e progressi. Usa SOLO i dati qui sotto.
+                const prompt = `Sei l'assistente della app Tappy (allenamento su tapis roulant). L'utente ti fa una domanda sui suoi dati di allenamento, obiettivi e progressi. Usa SOLO i dati qui sotto.
 
 ${context}
 
@@ -3346,6 +3397,7 @@ REGOLE:
             const totalKcal = filtered.reduce((s, e) => s + e.kcal, 0);
             const avgSpeed = totalSec > 0 ? totalKm / (totalSec / 3600) : 0;
 
+            document.getElementById('sum-km').innerText = totalKm.toFixed(1);
             document.getElementById('sum-time').innerText = (totalSec / 60).toFixed(1);
             document.getElementById('sum-kcal').innerText = Math.round(totalKcal);
             document.getElementById('sum-speed').innerText = avgSpeed.toFixed(1);
@@ -3503,10 +3555,13 @@ REGOLE:
                 const d = new Date(e.dateISO);
                 const dateStr = d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
                     ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+                const fl = e.feeling || 0;
+                const stars = [1,2,3,4,5].map(n => `<span onclick="setSessionFeeling('${e.id}',${n})" style="cursor:pointer;color:${n <= fl ? 'var(--accent-orange)' : 'var(--border-color)'};">★</span>`).join('');
                 return `<div class="session-row">
-                    <div>
+                    <div style="flex:1;min-width:0;">
                         <div>${e.program}${e.complete ? '' : ' (parziale)'}${e.manualEntry ? ' · ✏️ inserita a mano' : ''}</div>
                         <div class="session-meta">${dateStr} · ${formatHoursMinutes(e.durationSec)} · ${e.km.toFixed(2)} km · ${Math.round(e.kcal)} kcal · ${e.avgSpeed.toFixed(1)} km/h</div>
+                        <div style="margin-top:5px;font-size:17px;letter-spacing:2px;">${stars}<span style="font-size:10.5px;color:var(--text-muted);margin-left:7px;letter-spacing:0;">come mi sono sentito</span></div>
                     </div>
                     <button class="session-del" onclick="deleteSession('${e.id}')">🗑️</button>
                 </div>`;
