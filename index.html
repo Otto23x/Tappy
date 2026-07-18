@@ -275,20 +275,23 @@
         }
 
         .header-nav {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
             gap: 6px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
+            max-width: 1100px;
+            margin: 0 auto 12px;
         }
+        @media (max-width: 640px) { .header-nav { grid-template-columns: repeat(3, 1fr); } }
         .header-nav button {
-            border: 1px solid rgba(255,255,255,0.25);
-            background: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.75);
-            padding: 7px 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            padding: 10px 4px;
             border-radius: 9px;
             font-size: 12.5px;
             font-weight: 600;
             cursor: pointer;
+            width: 100%;
             white-space: nowrap;
         }
         #nav-support { padding-left: 11px; padding-right: 11px; }
@@ -739,16 +742,16 @@
             <div class="logo-box">Tappy</div>
             <div class="logo-text"></div>
         </div>
-        <div class="header-nav">
-            <button id="nav-workout" class="active" onclick="switchView('workout')">🏃 Run</button>
-            <button id="nav-history" onclick="switchView('history')">📊 Storico</button>
-            <button id="nav-tracker" onclick="switchView('tracker')">⏺ Registra</button>
-            <button id="nav-routes" onclick="switchView('routes')">🛣️ Percorsi</button>
-            <button id="nav-io" onclick="switchView('io')">👤 Io</button>
-            <button id="nav-support" onclick="switchView('support')" title="Supporto" aria-label="Supporto">❓</button>
-        </div>
-        <div id="status-tag" style="font-size: 12px; color: var(--text-muted);"></div>
+        <div id="status-tag" style="font-size: 12px; color: var(--text-muted); text-align:right;"></div>
     </header>
+    <div class="header-nav">
+        <button id="nav-workout" class="active" onclick="switchView('workout')">🏃 Run</button>
+        <button id="nav-routes" onclick="switchView('routes')">🛣️ Percorsi</button>
+        <button id="nav-tracker" onclick="switchView('tracker')">⏺ Registra</button>
+        <button id="nav-history" onclick="switchView('history')">📊 Storico</button>
+        <button id="nav-io" onclick="switchView('io')">👤 Io</button>
+        <button id="nav-support" onclick="switchView('support')" title="Supporto">❓ Guida</button>
+    </div>
 
     <div id="view-workout" class="view active">
     <div id="reminder-banner" style="display:none; max-width:1100px; margin:0 auto 10px; padding:10px 14px; background:linear-gradient(135deg,#7c2d12,#9a3412); border-radius:10px; font-size:12.5px; font-weight:600;"></div>
@@ -1222,6 +1225,14 @@
                 <div style="font-size:11px; color:var(--text-muted); margin-bottom:8px;">Ogni volta che aggiorni peso/massa grassa nel Profilo e premi "Salva Profilo", viene registrata qui una nuova misurazione datata.</div>
                 <div id="body-history-list"></div>
             </div>
+            <div class="panel"><label style="font-size:15px; font-weight:700;">🗺️ Google Maps <span style="font-size:10px; color:var(--text-muted);">satellite + altimetria del terreno</span></label>
+                <div class="hint" style="margin:6px 0 8px;">Mappa satellitare live durante la registrazione dei percorsi e altimetria ricalcolata dal modello del terreno (più precisa del GPS, applicata da sola al salvataggio). Istruzioni passo-passo nella pagina ❓ Guida.</div>
+                <label for="maps-key">Chiave API Google Maps</label>
+                <input id="maps-key" type="password" placeholder="AIza…" style="width:100%;">
+                <button class="btn" style="margin-top:6px;" onclick="saveMapsKey()">Salva chiave</button>
+                <div class="hint" id="maps-status" style="margin-top:6px;"></div>
+            </div>
+
 
         </div>
     </div>
@@ -1235,6 +1246,8 @@
 
             <div class="panel"><label style="font-size:15px; font-weight:700; margin-bottom:8px; display:block;">Le sezioni</label><table class="gtable">
                 <tr><td>🏃</td><td><b>Run</b> — scegli il programma (P1-P36 o M1 Manuale), avvia/pausa/reset, video di scenario in tempo reale, cruscotto live con segmento/velocità/pendenza, e il collegamento Bluetooth al tapis.</td></tr>
+                <tr><td>🛣️</td><td><b>Percorsi</b> — i percorsi reali registrati (o importati in GPX), con caratteristiche, gemello digitale e <b>sfida sul tapis</b>: colleghi il tapis via Bluetooth, confermi la riqualificazione (settori, compensazioni, equità) e a fine corsa vedi il delta tra percorso registrato ed effettuato. Qui anche le demo per provare.</td></tr>
+                <tr><td>⏺</td><td><b>Registra</b> — il tracker GPS per registrare una corsa reale all'aperto (superficie, cadenza, falcata) da trasformare in percorso.</td></tr>
                 <tr><td>📊</td><td><b>Storico</b> — obiettivi, riepilogo con grafico cliccabile, record personali, Coach AI (piano + analisi), “Chiedi all'AI”, sessioni, infortuni/pause, benessere giornaliero.</td></tr>
                 <tr><td>👤</td><td><b>Io</b> — impostazioni: profilo, connessioni (chiave AI, Drive, YouTube), backup locale e storico fisico.</td></tr>
                 <tr><td>❓</td><td><b>Supporto</b> — questa pagina.</td></tr>
@@ -1319,6 +1332,16 @@
                     <tr><td>7</td><td>Incollala in <b>Io → Connessioni → YouTube Data API Key</b>: viene salvata subito.</td></tr>
                 </table>
             </div>
+            <div class="panel"><label style="font-size:15px; font-weight:700; margin-bottom:8px; display:block;">🗺️ Chiave Google Maps (satellite + altimetria) — come ottenerla</label><table class="gtable">
+                <tr><td>1</td><td>Vai su <b>console.cloud.google.com</b> e accedi con un account Google.</td></tr>
+                <tr><td>2</td><td>Crea un <b>nuovo progetto</b> (es. "Tappy") e selezionalo in alto.</td></tr>
+                <tr><td>3</td><td>Menu → <b>API e servizi → Libreria</b>: premi <b>Abilita</b> su <b>Maps JavaScript API</b> e su <b>Elevation API</b> (servono entrambe: mappa satellitare + altimetria del terreno).</td></tr>
+                <tr><td>4</td><td>Menu → <b>API e servizi → Credenziali → + Crea credenziali → Chiave API</b>. Copia la chiave (inizia con AIza…).</td></tr>
+                <tr><td>5</td><td>Consigliato: apri la chiave → <b>Limitazioni applicazione → Siti web</b> e aggiungi il tuo indirizzo (es. <b>https://tuonome.github.io/*</b>); sotto <b>Limitazioni API</b> spunta solo le due API di cui sopra.</td></tr>
+                <tr><td>6</td><td>Serve la Fatturazione attiva sul progetto, ma il credito gratuito mensile di Google copre ampiamente l'uso personale.</td></tr>
+                <tr><td>7</td><td>Incollala in <b>Io → 🗺️ Google Maps</b>. Nota: funziona solo da <b>https://</b> (GitHub Pages ok), non da file://. Senza chiave restano mini-mappa disegnata e altimetria GPS.</td></tr>
+            </table></div>
+
 
         </div>
     </div>
@@ -3804,13 +3827,6 @@ REGOLE:
         <div style="height:8px"></div>
         <p class="hint" id="rec-status">In attesa. Su iPhone verrà chiesto il permesso ai sensori di movimento.</p>
     </div>
-    <div class="card">
-        <h2>Prova senza uscire <span class="tag">DEMO</span></h2>
-        <div class="btn-row">
-            <button class="ghost" onclick="genDemo('corsa')">🏃 Demo parco 6 km</button>
-            <button class="ghost" onclick="genDemo('rampa')">🏔️ Demo rampa 18% (test tapis)</button>
-        </div>
-    </div>
 </div>
 
 <!-- ═══════════ SIMMY IN TAPPY · VISTA: PERCORSI + TAPIS ═══════════ -->
@@ -3823,7 +3839,14 @@ REGOLE:
         <hr class="sep">
         <div class="btn-row">
             <div><label>Importa .json</label><input type="file" id="import-route-file" accept="application/json" onchange="importRouteFile(this)"></div>
-            <div><label>Importa .gpx (Strava/Garmin/Komoot)</label><input type="file" id="import-gpx-file" accept=".gpx,application/gpx+xml,application/xml" onchange="importGpxFile(this)"></div>
+            <div><label>Importa .gpx</label><input type="file" id="import-gpx-file" accept=".gpx,application/gpx+xml,application/xml" onchange="importGpxFile(this)"></div>
+        </div>
+    </div>
+    <div class="card">
+        <h2>Prova senza uscire <span class="tag">DEMO</span></h2>
+        <div class="btn-row">
+            <button class="ghost" onclick="genDemo('corsa')">🏃 Demo parco 6 km</button>
+            <button class="ghost" onclick="genDemo('rampa')">🏔️ Demo rampa 18% (test tapis)</button>
         </div>
     </div>
     <div class="card" id="route-detail" style="display:none">
@@ -3911,23 +3934,6 @@ REGOLE:
         </div>
         <div id="sbt-beltrow" style="display:none" class="hint">Nastro: <span id="sbt-belt" style="font-family:monospace;color:var(--accent-blue)">0.0</span> km/h · <span id="sbt-lastincl"></span></div>
         <p class="hint" id="sbt-status" style="margin-top:6px">Non connesso.</p>
-    </div>
-    <div class="card">
-        <h2>Google Maps <span class="tag">satellite + altimetria terreno</span></h2>
-        <p class="hint">Con una chiave Maps JavaScript + Elevation API: mappa satellitare live durante la registrazione e altimetria ricalcolata dal modello del terreno (più precisa del GPS, applicata automaticamente al salvataggio).</p>
-        <label>Chiave API</label><input id="maps-key" type="password" placeholder="AIza…">
-        <button class="ghost" onclick="saveMapsKey()">Salva chiave</button>
-        <p class="hint" id="maps-status"></p>
-        <details style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:var(--accent-blue);font-weight:600">📖 Come ottenere la chiave Google Maps (guida)</summary>
-        <p class="hint" style="margin-top:8px">
-1. Vai su <b>console.cloud.google.com</b> e accedi con un account Google.<br>
-2. In alto crea un <b>nuovo progetto</b> (es. "Simmy") e selezionalo.<br>
-3. Menu → <b>API e servizi → Libreria</b>: cerca e premi <b>Abilita</b> su <b>Maps JavaScript API</b> e su <b>Elevation API</b> (servono entrambe: la prima per la mappa satellitare, la seconda per l'altimetria del terreno).<br>
-4. Menu → <b>API e servizi → Credenziali → + Crea credenziali → Chiave API</b>. Copia la chiave (inizia con AIza…) e incollala qui sopra.<br>
-5. Consigliato: apri la chiave e sotto <b>Limitazioni applicazione → Siti web (referrer HTTP)</b> aggiungi l'indirizzo dove pubblichi l'app (es. <b>https://tuonome.github.io/*</b>). Sotto <b>Limitazioni API</b> spunta solo Maps JavaScript API ed Elevation API. Così la chiave non è usabile altrove.<br>
-6. Google offre un credito mensile gratuito ampio: per uso personale non paghi nulla, ma la carta va comunque associata al progetto (Fatturazione).<br><br>
-<b>Nota:</b> le API funzionano solo da <b>https://</b> (GitHub Pages va bene), non da file:// aperto in locale. Senza chiave l'app resta pienamente funzionante con la mini-mappa disegnata e l'altimetria GPS.</p>
-        </details>
     </div>
 </div>
 
@@ -4528,7 +4534,7 @@ function renderRouteList() {
                 <div class="name">${MODE_ICO[r.mode]} ${esc(r.name)}</div>
                 
             </div>
-            <div class="meta">${fmtDate(r.date)} · ${r.st.km.toFixed(1)} km · D+ ${r.st.dplus} m · asfalto ${r.st.rgAvg.toFixed(1)} · <span class="stars">${'★'.repeat(r.st.q)}${'☆'.repeat(5-r.st.q)}</span></div>
+            <div class="meta">${fmtDate(r.date)} · ${r.st.km.toFixed(1)} km · D+ ${r.st.dplus} m · ${r.st.vavg} km/h · ${surfaceName(r.st.rgAvg)} · ${fmtTime(r.dur)} · ${'★'.repeat(r.st.q)}${'☆'.repeat(5-r.st.q)}</div>
         </div>`).join('');
 }
 function esc(s) { return String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
@@ -4732,27 +4738,59 @@ function requalifyRoute(r) {
     for (let i = 1; i < n; i++) cum.push(cum[i-1] + hav({lat:pts[i-1][1],lon:pts[i-1][2]},{lat:pts[i][1],lon:pts[i][2]}));
     const iMin = btActive() ? BT.effInclMin/10 : 0, iMax = btActive() ? BT.effInclMax/10 : 15;
     const sMin = btActive() ? BT.effSpdMin/100 : 1, sMax = btActive() ? BT.effSpdMax/100 : 20;
-    const me = loadProfile();
-    const slope = [], incl = [], vB = [], vT = []; let clampedM = 0, eqSum = 0, tTgt = 0, tB = 0;
+    const me = simProfile();
+    // profilo fine (per la grafica del replay, che resta fedele al dato reale)
+    const slope = [], vB = [];
     for (let i = 0; i < n; i++) {
-        // pendenza media sui prossimi ~60 m
         let dz = 0, dd = 0, j = i;
         while (j < n-1 && cum[j] < cum[i] + 60) { const z = (pts[j+1][3] ?? 0) - (pts[j][3] ?? 0); dz += z; dd += Math.max(1, cum[j+1]-cum[j]); j++; }
-        const sl = dd ? (dz/dd)*100 : 0;
-        const im = Math.max(iMin, Math.min(iMax, sl));
-        const comp = Math.abs(sl - im) > 0.1 ? minettiC(sl/100) / minettiC(im/100) : 1;
-        const eq = Math.max(0.85, Math.min(1.15, bodyFactor(me, sl/100) / bodyFactor(r.creator, sl/100)));
-        const vb = Math.max(0.4, pts[i][4]) * 3.6;
-        const vt = Math.max(sMin, Math.min(sMax, vb * comp * eq));
-        slope.push(sl); incl.push(im); vB.push(vb); vT.push(vt);
-        eqSum += eq;
-        const seg = i < n-1 ? cum[i+1]-cum[i] : 0;
-        if (Math.abs(sl - im) > 0.2) clampedM += seg;
-        tB += seg / (vb/3.6); tTgt += seg / (vt/3.6);
+        slope.push(dd ? (dz/dd)*100 : 0);
+        vB.push(Math.max(0.4, pts[i][4]) * 3.6);
     }
-    return { cum, slope, incl, vB, vT, total: cum[n-1],
+    /* ── SETTORI ────────────────────────────────────────────────────
+       Comandare il tapis a ogni campione GPS significa variazioni di
+       pendenza e velocità ogni pochi secondi: invivibile. Il percorso
+       viene diviso in settori di almeno 30 s e 150 m (del benchmark):
+       al tapis arrivano le MEDIE del settore, che cambiano solo al
+       confine. Meno fedele al centimetro, ma corribile; la grafica
+       del replay continua a usare il profilo fine.                  */
+    const SECT_S = 30, SECT_M = 150;
+    const sIncl = new Array(n), sVT = new Array(n), sComp = new Array(n), sEq = new Array(n);
+    let nSect = 0, s0 = 0;
+    for (let i = 1; i <= n; i++) {
+        const last = i === n;
+        const tSpan = (pts[Math.min(i, n-1)][0] - pts[s0][0]) / 1000;
+        const dSpan = cum[Math.min(i, n-1)] - cum[s0];
+        if (!last && (tSpan < SECT_S || dSpan < SECT_M)) continue;
+        let sl = 0, vb = 0, m = 0;
+        for (let k = s0; k < i; k++) { sl += slope[k]; vb += vB[k]; m++; }
+        if (m) {
+            sl /= m; vb /= m;
+            const im = Math.max(iMin, Math.min(iMax, sl));
+            const comp = Math.abs(sl - im) > 0.1 ? minettiC(sl/100) / minettiC(im/100) : 1;
+            const eq = Math.max(0.85, Math.min(1.15, bodyFactor(me, sl/100) / bodyFactor(r.creator, sl/100)));
+            const vt = Math.max(sMin, Math.min(sMax, vb * comp * eq));
+            for (let k = s0; k < i; k++) { sIncl[k] = im; sVT[k] = vt; sComp[k] = comp; sEq[k] = eq; }
+            nSect++;
+        }
+        s0 = i;
+    }
+    for (let k = 0; k < n; k++) if (sIncl[k] === undefined) {
+        sIncl[k] = Math.max(iMin, Math.min(iMax, slope[k]));
+        sVT[k] = Math.max(sMin, Math.min(sMax, vB[k]));
+        sComp[k] = 1; sEq[k] = 1;
+    }
+    // metriche riassuntive: tempi calcolati su ciò che il tapis farà davvero (settori)
+    let clampedM = 0, eqSum = 0, tTgt = 0, tB = 0;
+    for (let i = 0; i < n; i++) {
+        eqSum += sEq[i];
+        const seg = i < n-1 ? cum[i+1]-cum[i] : 0;
+        if (Math.abs(slope[i] - sIncl[i]) > 0.2) clampedM += seg;
+        tB += seg / (vB[i]/3.6); tTgt += seg / (sVT[i]/3.6);
+    }
+    return { cum, slope, incl: sIncl, vB, vT: sVT, sIncl, sVT, sComp, sEq, total: cum[n-1],
              clampedPct: Math.round(clampedM / Math.max(1,cum[n-1]) * 100),
-             eqAvg: eqSum / n, tB, tTgt, iMin, iMax };
+             eqAvg: eqSum / n, tB, tTgt, iMin, iMax, nSect, sectS: SECT_S };
 }
 function drawTwoLines(cv, x, y1, y2, c1, c2, unit) {
     const fc = fitCanvas(cv); if (fc.skip) return;
@@ -4783,7 +4821,8 @@ function startReplay(id) {
             '<b>' + rq.clampedPct + '%</b> del percorso ha pendenze fuori dal range del tapis: lì la pendenza è stata ritagliata e la <b>velocità target compensata</b> per mantenere lo stesso sforzo (Minetti) — sia in salita (target più alto) sia in discesa (target più basso).<br>' +
             'Fattore di equità medio vs creatore: <b>×' + rq.eqAvg.toFixed(2) + '</b>' +
             (Math.abs(rq.eqAvg-1) < 0.005 ? ' (stesso fisico o dati mancanti)' : rq.eqAvg < 1 ? ' (fisico più pesante: target ridotto)' : ' (fisico più leggero: target aumentato)') + '.<br>' +
-            'Tempo benchmark originale <b>' + fmtTime(rq.tB) + '</b> → tempo di riferimento adattato <b>' + fmtTime(rq.tTgt) + '</b>.';
+            'Tempo benchmark originale <b>' + fmtTime(rq.tB) + '</b> → tempo di riferimento adattato <b>' + fmtTime(rq.tTgt) + '</b>.<br>' +
+            'Comandi al tapis per <b>settori di ~' + rq.sectS + ' s</b> (' + rq.nSect + ' settori): pendenza e velocità sono le medie del settore e cambiano solo al suo confine — niente saliscendi continui a ogni campione GPS.';
         document.getElementById('pf-ai').textContent = '';
         document.getElementById('prefly-overlay').style.display = 'block';
         requestAnimationFrame(() => {
@@ -4862,13 +4901,14 @@ function rpFrame(now) {
     RP.curveS += (curve - RP.curveS) * Math.min(1, dt * 4);
     RP.slopeS += (slope - RP.slopeS) * Math.min(1, dt * 3);
     if (bt && !RP.paused) {
-        const det = btChallengeTick(slope, Math.max(0.4, p[4]), RP.offset, RP.r, false);
+        // comandi per SETTORE: valori medi, cambiano solo al confine del settore
+        const det = btSectorTick(RP.rq.sIncl[i], RP.rq.sVT[i], RP.offset, false);
         if (det) document.getElementById('rp-chal').textContent =
-            'target ' + det.target.toFixed(1) + ' km/h = bench ' + (p[4]*3.6).toFixed(1) +
-            (Math.abs(det.comp-1) > 0.005 ? ' × comp ' + det.comp.toFixed(2) : '') +
-            (Math.abs(det.eq-1) > 0.005 ? ' × equità ' + det.eq.toFixed(2) : '') +
-            (RP.offset ? ' ' + (RP.offset > 0 ? '+' : '') + RP.offset.toFixed(1) : '') +
-            ' · pendenza bloccata ' + det.iMachinePct.toFixed(1) + '%';
+            'settore ~' + RP.rq.sectS + 's · target ' + det.target.toFixed(1) + ' km/h' +
+            (Math.abs(RP.rq.sComp[i]-1) > 0.005 ? ' × comp ' + RP.rq.sComp[i].toFixed(2) : '') +
+            (Math.abs(RP.rq.sEq[i]-1) > 0.005 ? ' × equità ' + RP.rq.sEq[i].toFixed(2) : '') +
+            (RP.offset ? (RP.offset > 0 ? ' +' : ' ') + RP.offset.toFixed(1) : '') +
+            ' · pendenza bloccata ' + det.incl.toFixed(1) + '%';
         const gap = (RP.tim[i] || 0) - RP.elapsed;
         const g = document.getElementById('rp-gap');
         g.textContent = (gap >= 0 ? '+' : '−') + Math.abs(gap).toFixed(0) + 's';
@@ -5060,7 +5100,7 @@ function endReplay(completed) {
         sess = { id: uid(), routeId: r.id, name: r.name, date: new Date().toISOString(), dur, km: +km.toFixed(2), completed: !!completed };
         if (bt && RP.samples.length > 2) {
             sess.res = { samples: RP.samples,
-                tTgt: Math.round(RP.rq.tTgt * Math.min(1, RP.pos / RP.total)),
+                tTgt: Math.round(RP.rq.tTgt * Math.min(1, RP.pos / RP.total)), nSect: RP.rq.nSect,
                 eqAvg: +RP.rq.eqAvg.toFixed(2), clampedPct: RP.rq.clampedPct,
                 tgt: RP.rq.cum.filter((_, k) => k % Math.ceil(RP.rq.cum.length/300) === 0).map((d, k2) => {
                     const k = k2 * Math.ceil(RP.rq.cum.length/300);
@@ -5087,7 +5127,8 @@ function showChallengeResult(sess) {
     const kpi = [
         [fmtTime(sess.dur), 'tuo tempo'], [fmtTime(res.tTgt), 'riferimento adattato'],
         [(gap >= 0 ? '+' : '−') + fmtTime(Math.abs(gap)), gap >= 0 ? 'in vantaggio' : 'in ritardo'],
-        [vReal.toFixed(1), 'tua vel media'], [vTgt.toFixed(1), 'vel target media'], [sess.km.toFixed(1), 'km percorsi']
+        [vReal.toFixed(1), 'tua vel media'], [vTgt.toFixed(1), 'vel target media'], [sess.km.toFixed(1), 'km percorsi'],
+        ['×' + (res.eqAvg || 1).toFixed(2), 'fattore equità'], [(res.clampedPct || 0) + '%', 'pendenza ritagliata'], [(res.nSect || '—') + '', 'settori']
     ];
     document.getElementById('res-kpi').innerHTML = kpi.map(k => `<div class="kpi"><div class="v">${k[0]}</div><div class="l">${k[1]}</div></div>`).join('');
     document.getElementById('res-ai').innerHTML = ''; document.getElementById('res-ai-status').textContent = '';
@@ -5377,6 +5418,26 @@ function btChallengeTick(slopeRoute, vBench, offsetKmh, route, force) {
 }
 
 /* ── PROFILO MODELLO TAPIS (manuale o compilato dall'AI) ────────── */
+
+/* Tick di SETTORE: riceve pendenza e velocità già mediate/compensate dal
+   settore corrente; invia solo se cambiate (il filtro anti-ridondanza fa
+   il resto: dentro un settore non parte quasi nessun comando). */
+function btSectorTick(inclPct, targetKmh, offsetKmh, force) {
+    if (!btActive()) return null;
+    const now = Date.now();
+    const target = Math.max(BT.effSpdMin / 100, Math.min(BT.effSpdMax / 100, targetKmh + offsetKmh));
+    if (force || now - BT.lastSendT >= 2000) {
+        btSetIncline(inclPct);
+        btSetSpeed(target);
+        BT.lastSendT = now;
+        if (BT.machineIncl !== null && BT.lastInclSent !== null && now - BT.lastEnforceT > 4000 &&
+            Math.abs(BT.machineIncl * 10 - BT.lastInclSent) > BT.inclStep) {
+            BT.lastEnforceT = now; const d = BT.lastInclSent; BT.lastInclSent = null; btRawIncl(d);
+        }
+    }
+    return { target, incl: Math.max(BT.effInclMin/10, Math.min(BT.effInclMax/10, inclPct)) };
+}
+
 function saveMachineForm() {
     const g = id => document.getElementById(id).value.trim();
     const num = id => { const v = parseFloat(g(id)); return isNaN(v) ? null : v; };
